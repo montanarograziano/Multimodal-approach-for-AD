@@ -1,6 +1,6 @@
-# Multimodal approach for Dementia Detection
+# Multimodal approach for AD Detection
  
-This repository contains notebooks for the experiments conducted for testing a multimodal approach for assessing Dementia from PET and MRI. The notebooks are separated in:
+This repository contains notebooks for the experiments conducted for testing a multimodal approach for assessing AD from PET and MRI. The notebooks are separated in:
 - *Dataset_MRI.ipynb*, containing the code used to process the raw MRI data to create the final dataset.
 - *Dataset_PET.ipynb*, containing the code used to process the raw PET data to create the final dataset.
 - *Training.ipynb*, which contains the code used for training and testing the various models.
