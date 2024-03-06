@@ -6,3 +6,4 @@ This repository contains notebooks for the experiments conducted for testing a m
 - *Training.ipynb*, which contains the code used for training and testing the various models.
 - *Heatmaps.ipynb*, which contains the code used for generating heatmaps based on the GradCAM algorithm, using the plugin [*tf-keras-vis*](https://github.com/keisen/tf-keras-vis).
 - *Exploration.ipynb*, which contains the code used for the evaluation of the heatmaps in order to rank the brain's zones.
+- *images/3D Brain Plot.ipynb*, which contains the code used to generate the figures available in the paper.

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dementiadetection"
+version = "0.1.0"
+description = ""
+authors = ["Andrea Esposito <esposito_andrea99@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.26.4"
+nilearn = "^0.10.3"
+matplotlib = "^3.8.2"
+notebook = "^7.0.7"
+opencv-python = "^4.9.0.80"
+pandas = "^2.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
