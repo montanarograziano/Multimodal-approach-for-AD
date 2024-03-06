@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Montanaro"
+  given-names: "Graziano"
+  orcid: "https://orcid.org/0000-0001-8806-7688"
+- family-names: "Esposito"
+  given-names: "Andrea"
+  orcid: "https://orcid.org/0000-0002-9536-3087"
+title: "Multimodal Approach for AD"
+url: "https://github.com/montanarograziano/Multimodal-approach-for-AD"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Castellano"
+    given-names: "Giovanna"
+    orcid: "https://orcid.org/0000-0002-6489-8628"
+  - family-names: "Andrea"
+    given-names: "Esposito"
+    orcid: "https://orcid.org/0000-0002-9536-3087"
+  - family-names: "Lella"
+    given-names: "Eufemia"
+    orcid: "https://orcid.org/0000-0001-6137-328X"
+  - family-names: "Graziano"
+    given-names: "Montanaro"
+    orcid: "https://orcid.org/0000-0001-8806-7688"
+  - family-names: "Vessio"
+    given-names: "Gennaro"
+    orcid: "https://orcid.org/0000-0002-0883-2691"
+  doi: "10.1038/s41598-024-56001-9"
+  journal: "Scientific Reports"
+  month: 3
+  start: 5210
+  title: "Automated detection of Alzheimer’s disease: a multi-modal approach with 3D MRI and amyloid PET"
+  volume: 14
+  year: 2024
