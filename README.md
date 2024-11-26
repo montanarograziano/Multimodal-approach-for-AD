@@ -1,3 +1,6 @@
+*UPDATE*:
+- **03/2024**: Published on Scientific Reports! Check the paper [here](https://www.nature.com/articles/s41598-024-56001-9).
+
 # Multimodal approach for AD Detection
  
 This repository contains notebooks for the experiments conducted for testing a multimodal approach for assessing AD from PET and MRI. The notebooks are separated in:
