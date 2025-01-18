@@ -1,0 +1,28 @@
+[project]
+name = "multimodal-approach-for-ad"
+version = "0.1.0"
+description = "Code for 'Automated Detection of Alzheimer’s Disease: A Multi-modal Approach With 3D MRI and Amyloid PET' paper"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "nibabel>=5.3.2",
+    "numpy>=2.2.1",
+    "opencv-python>=4.11.0.86",
+    "p-tqdm>=1.4.2",
+    "pandas>=2.2.3",
+    "pillow>=11.1.0",
+    "scipy>=1.15.1",
+    "tensorflow>=2.14.0",
+    "tf-keras-vis>=0.8.7",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "mypy>=1.14.1",
+    "notebook>=7.3.2",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.2",
+]
