@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.4
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        # README/legacy images sub-project are left untouched per migration scope.
+        exclude: '\.ipynb$|^README\.md$|^images/'
+      - id: end-of-file-fixer
+        exclude: '\.ipynb$|^README\.md$|^images/'
+      - id: check-toml
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+        # Legacy dataset/notebook artifacts predate this policy and are
+        # intentionally kept as-is; see docs/legacy-notebooks-inventory.md.
+        exclude: '\.(nii|npy)$'
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: pyrefly
+        name: pyrefly
+        entry: uv run pyrefly check
+        language: system
+        pass_filenames: false
+        types: [python]
