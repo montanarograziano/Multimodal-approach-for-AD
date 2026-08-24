@@ -28,6 +28,33 @@ per-region means (`rank_regions`) without built-in ascending/descending
 "best" semantics; callers must choose and document a sort direction
 explicitly rather than inherit the notebook's unconfirmed convention (see
 inventory doc, `exploration.ipynb` section, final bullet).
+
+**Two mean columns, two different denominators**: the notebook computes
+`f"{name} mean"` as `masked.mean()` over the *entire padded common frame*
+(`(128, 128, 128)` = 2,097,152 voxels), not over the region alone, because
+`masked` is the heatmap zeroed outside the region but still full-frame
+shaped (`np.ma.masked_where(...).filled(0)` then `.mean()` with no
+per-region slicing). That means `f"{name} mean"` = region sum / *frame*
+voxel count, which shrinks toward zero for small regions purely because
+the denominator is huge and mostly zeros, not because the region has low
+Grad-CAM importance. This module:
+
+- Keeps `f"{name} mean"` computed with the notebook's *exact* formula
+  (sum over the region divided by the full common-frame voxel count) as
+  the default column, so results reproducing the published paper's
+  region tables match the notebook's numbers.
+- Adds `f"{name} region mean"`: the *region-count-normalized* mean (sum
+  over the region divided by the number of voxels actually in that
+  region), i.e. the value most readers would assume "mean Grad-CAM in
+  region X" means. This is what should drive new analysis, since it is
+  comparable across regions of different sizes; `f"{name} mean"` is not
+  (a large region and a tiny region with identical average per-voxel
+  signal get very different `f"{name} mean"` values purely from frame-size
+  dilution).
+
+`f"{name} sum"` and `f"{name} count"` are unaffected by this distinction
+(both are already per-region) and remain as-is; `f"{name} region mean"` is
+exactly `sum / count` when `count > 0`.
 """
 
 from __future__ import annotations
@@ -77,28 +104,40 @@ def rank_regions(
     region_labels: pd.DataFrame,
     heatmaps: dict[str, np.ndarray],
 ) -> pd.DataFrame:
-    """Compute masked mean/count/sum per atlas region, for each named heatmap.
+    """Compute masked mean/region-mean/count/sum per atlas region, per heatmap.
 
     `atlas` and every array in `heatmaps` must already be padded to the same
     shape (e.g. via `pad_to_frame`). `region_labels` is `load_region_labels`'s
     output (index: region name, column `intensity`). Returns one row per
-    region with `f"{name} mean"`, `f"{name} count"`, `f"{name} sum"` columns
-    per heatmap key, mirroring the notebook's per-modality/per-class column
-    naming (`"Negative PET mean"`, etc.) without hardcoding modality/class
-    names.
+    region with, per heatmap key, mirroring the notebook's per-modality/
+    per-class column naming (`"Negative PET mean"`, etc.) without hardcoding
+    modality/class names:
+
+    - `f"{name} mean"`: the notebook's exact formula, region sum divided by
+      the *full common-frame voxel count* (`atlas.size`), not the region's
+      own voxel count. Kept for reproducing the published paper's numbers;
+      see module docstring, "Two mean columns, two different denominators".
+    - `f"{name} region mean"`: region sum divided by the region's own voxel
+      count (`nan` if the region has no matching voxels). The
+      size-comparable mean; prefer this for new analysis.
+    - `f"{name} count"`: number of nonzero heatmap voxels in the region.
+    - `f"{name} sum"`: sum of heatmap values in the region.
     """
+    frame_voxel_count = atlas.size
     rows: list[dict[str, object]] = []
     for region_name, row in region_labels.iterrows():
         intensity = row["intensity"]
         region_mask = atlas == intensity
+        has_region = bool(region_mask.any())
         record: dict[str, object] = {"part": region_name}
         for heatmap_name, heatmap in heatmaps.items():
             masked = np.where(region_mask, heatmap, 0.0)
-            has_region = bool(region_mask.any())
-            record[f"{heatmap_name} mean"] = (
+            region_sum = float(masked.sum())
+            record[f"{heatmap_name} mean"] = region_sum / frame_voxel_count
+            record[f"{heatmap_name} region mean"] = (
                 float(masked[region_mask].mean()) if has_region else float("nan")
             )
             record[f"{heatmap_name} count"] = int(np.count_nonzero(masked))
-            record[f"{heatmap_name} sum"] = float(masked.sum())
+            record[f"{heatmap_name} sum"] = region_sum
         rows.append(record)
     return pd.DataFrame(rows)

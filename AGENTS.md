@@ -49,7 +49,8 @@ Run via `just` (see `Justfile` for the full list):
 just sync        # uv sync --locked
 just fmt         # ruff format .
 just lint        # ruff check .
-just typecheck   # pyrefly check
+just typecheck   # pyrefly check (src/tests, excludes multimodal_ad.models)
+just typecheck-model  # pyrefly check src/multimodal_ad/models tests/models
 just test        # pytest
 just check       # lint + format check + typecheck + test (CI-equivalent)
 just hooks       # uv run prek run --all-files
@@ -58,6 +59,14 @@ just hooks       # uv run prek run --all-files
 Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
 `uv run ruff format --check .`, `uv run pyrefly check`, `uv run pytest`,
 `uv run prek run --all-files`.
+
+`multimodal_ad.models` (and `tests/models`) import TensorFlow/Keras
+unconditionally, so they are excluded from `just typecheck`'s default scope
+(`project-excludes` in `pyproject.toml`'s `[tool.pyrefly]`) to keep the fast
+`check` CI job/`just check` runnable without the `model` extra installed.
+Run `just typecheck-model` after `uv sync --extra model` to type-check that
+subtree; CI's `model-smoke` job does this automatically after installing the
+`model` extra.
 
 ## Conventions
 

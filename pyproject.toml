@@ -69,7 +69,11 @@ extend-exclude = ["*.ipynb"]
 select = ["E", "F", "I", "UP", "B", "SIM", "N"]
 
 [tool.pyrefly]
+# Default scope excludes `multimodal_ad.models`/`tests/models`: they import
+# TensorFlow/Keras unconditionally, which isn't installed in the fast
+# `check` CI job (see AGENTS.md, `just typecheck` vs `just typecheck-model`).
 project-includes = ["src", "tests"]
+project-excludes = ["src/multimodal_ad/models/**", "tests/models/**"]
 search-path = ["src"]
 python-version = "3.13"
 

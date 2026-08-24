@@ -354,7 +354,15 @@ model attention to known AD-affected regions.
   known limitation, not a validated coregistration.
 - For each atlas region, computes masked mean/count/sum over the padded
   heatmaps, separately for {MRI, PET} × {positive, negative}, and writes
-  `heatmap_importance.csv`.
+  `heatmap_importance.csv`. **Denominator note**: `mean` is `masked.mean()`
+  on the array *after* zeroing outside the region but *before* slicing to
+  the region, so it divides by the full (128, 128, 128) common-frame voxel
+  count, not the region's own voxel count — a small region's `mean` is
+  diluted by a mostly-zero denominator, not a smaller per-voxel signal. The
+  port in `multimodal_ad.models.regions.rank_regions` keeps this exact
+  formula as `f"{name} mean"` (for reproducing the notebook's/paper's
+  numbers) and adds a size-comparable `f"{name} region mean"` (sum divided
+  by the region's own voxel count) for new analysis.
 - `!pipenv install` in the first cell is a leftover from a different,
   unrelated dependency manager than the rest of the project (which now uses
   `uv`) — **dead, must not be treated as a dependency source of truth**.

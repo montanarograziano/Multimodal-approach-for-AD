@@ -16,9 +16,13 @@ fmt:
 lint:
     uv run ruff check .
 
-# Type-check with Pyrefly
+# Type-check with Pyrefly (non-model source/tests only; no TensorFlow needed)
 typecheck:
     uv run pyrefly check
+
+# Type-check multimodal_ad.models + tests/models (requires `uv sync --extra model`)
+typecheck-model:
+    uv run pyrefly check src/multimodal_ad/models tests/models
 
 # Run the test suite
 test:

@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import os
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, cast
 
@@ -135,7 +135,7 @@ def train_model(
     y_train: np.ndarray,
     x_val: np.ndarray,
     y_val: np.ndarray,
-    config: TrainingConfig = field(default_factory=TrainingConfig),  # noqa: B008
+    config: TrainingConfig | None = None,
 ) -> TrainingResult:
     """Compile and train `model`, restoring the best checkpoint before evaluating.
 
@@ -144,8 +144,7 @@ def train_model(
     compiles, seeds, fits, and evaluates it, matching the legacy
     `train_3d_model` minus MLflow logging (see module docstring).
     """
-    if callable(config):  # dataclasses.field default sentinel guard
-        config = TrainingConfig()
+    config = config if config is not None else TrainingConfig()
     seed_everything(config.seed)
 
     train_dataset = make_dataset(

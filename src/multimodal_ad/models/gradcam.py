@@ -36,6 +36,8 @@ below finds it by type for convenience.
 
 from __future__ import annotations
 
+from typing import cast
+
 import keras
 import numpy as np
 import tensorflow as tf
@@ -77,7 +79,9 @@ def make_gradcam_heatmap(
             pred_index = 0  # binary sigmoid head: single output unit
         class_channel = preds[:, pred_index]
 
-    grads = tape.gradient(class_channel, last_conv_layer_output)
+    # `tape.gradient`'s return type is a broad union covering multi-source
+    # calls; a single-tensor source always yields a single `Tensor` here.
+    grads = cast(tf.Tensor, tape.gradient(class_channel, last_conv_layer_output))
     # Mean gradient per channel over the spatial (D, H, W) axes of a
     # (batch, D, H, W, C) feature map.
     pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2, 3))

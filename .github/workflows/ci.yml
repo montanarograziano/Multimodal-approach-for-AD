@@ -60,5 +60,8 @@ jobs:
       - name: Install dependencies (locked, with the `model` extra)
         run: uv sync --locked --extra model
 
+      - name: Type check (models)
+        run: uv run pyrefly check src/multimodal_ad/models tests/models
+
       - name: Model smoke tests (CPU, tiny shapes)
         run: uv run pytest tests/models
