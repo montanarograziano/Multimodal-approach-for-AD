@@ -393,19 +393,28 @@ in this PR:
 | `AAL2_Atlas_Labels.csv` | `exploration.ipynb` | Atlas region name → intensity mapping. |
 | `samples/mri-sample.png`, `samples/pet-sample.png` | README (implicitly, via `images/3D Brain Plot.ipynb`) | Figure assets for the paper. |
 
-## `images/` sub-project
+## `images/` sub-project (moved in the Phase 3 notebooks PR)
 
-`images/3D Brain Plot.ipynb` has its own, separate Poetry project
+`images/3D Brain Plot.ipynb` used to have its own, separate Poetry project
 (`images/pyproject.toml` + `images/poetry.lock`, `dementiadetection`
 0.1.0, Python `^3.9`, depends on `nilearn`/`numpy`/`matplotlib`/`notebook`/
 `opencv-python`/`pandas`) used only to generate the paper's glass-brain
-figures. **Decision for this PR: left untouched (deferred), not removed.**
-Rationale: it is isolated from the root project (own lockfile, own
-dependency set including `nilearn` which the root project does not need),
-poses no risk of confusing the root `uv` environment, and removing a
-working, self-contained reproducibility artifact for a figure script is not
-"clearly safe" without confirming the figures aren't needed again. Revisit
-in a follow-up if/when `images/3D Brain Plot.ipynb` is ported or retired.
+figures. An earlier revision of this document deferred touching it
+(isolated lockfile, no risk to the root `uv` environment). The Phase 3
+notebooks PR resolves that deferral: the notebook is now preserved
+byte-for-byte at `notebooks/legacy/3d-brain-plot.ipynb` alongside the other
+four legacy notebooks, and `images/pyproject.toml`/`images/poetry.lock`
+are **removed** (not just deferred), since the Poetry sub-project existed
+only to pin dependencies for that one notebook: with the notebook moved
+out of `images/`, the sub-project has no remaining purpose and keeping a
+second, unmaintained Python dependency toolchain (Poetry, pinned to Python
+`^3.9`, unrelated to this project's `uv`/3.13 toolchain) around for no
+referenced file would be needless upkeep, not a preserved artifact. The
+`images/` directory itself is gone (it held only the notebook and the
+Poetry files); `samples/*.png` (the rendered figure PNGs `images/3D Brain
+Plot.ipynb` produces) are untouched at the repository root, since those
+are the actual image assets, not the notebook/toolchain that generates
+them.
 
 ## Summary: what must be resolved before Phase 2 (scientific code porting)
 

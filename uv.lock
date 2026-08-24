@@ -1451,6 +1451,7 @@ docs = [
 ]
 notebooks = [
     { name = "ipykernel" },
+    { name = "matplotlib" },
     { name = "notebook" },
 ]
 
@@ -1479,6 +1480,7 @@ dev = [
 docs = [{ name = "zensical", specifier = ">=0.0.57" }]
 notebooks = [
     { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "notebook", specifier = ">=7.3.2" },
 ]
 
