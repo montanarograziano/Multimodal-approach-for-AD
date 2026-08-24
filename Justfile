@@ -37,3 +37,11 @@ check: lint
 # Run all prek hooks against the whole repo
 hooks:
     uv run prek run --all-files
+
+# Serve the documentation site locally with live reload
+docs-serve:
+    uv run --group docs zensical serve
+
+# Build the documentation site, failing on warnings
+docs-build:
+    uv run --group docs zensical build --strict

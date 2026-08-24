@@ -47,6 +47,9 @@ notebooks = [
     "ipykernel>=6.29.5",
     "notebook>=7.3.2",
 ]
+docs = [
+    "zensical>=0.0.57",
+]
 
 [build-system]
 requires = ["hatchling"]
