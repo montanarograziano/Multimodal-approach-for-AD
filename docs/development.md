@@ -6,8 +6,13 @@
 - Formatter/linter: `ruff` (`ruff format`, `ruff check`), configured in
   `pyproject.toml` (`line-length = 100`, `target-version = "py313"`,
   rule sets `E, F, I, UP, B, SIM, N`).
-- Type checker: `pyrefly`, scoped to `src/` and `tests/`.
-- Test runner: `pytest`, with coverage (`--cov=multimodal_ad`).
+- Type checker: `pyrefly`, scoped to `src/`/`tests/` by default,
+  excluding `multimodal_ad.models`/`tests/models` (those import
+  TensorFlow unconditionally); `just typecheck-model` checks that subtree
+  separately after `uv sync --extra model`.
+- Test runner: `pytest`, with coverage (`--cov=multimodal_ad`). Tests
+  under `tests/models/` use `pytest.importorskip("tensorflow")` and
+  auto-skip if the `model` extra isn't installed.
 - Git hooks: `prek` running the hooks in `.pre-commit-config.yaml`.
 
 See [Installation](installation.md) for setup and the command table.
@@ -16,8 +21,12 @@ See [Installation](installation.md) for setup and the command table.
 
 ```text
 .
-├── src/multimodal_ad/     # importable package (scaffold today)
-├── tests/                 # pytest suite
+├── src/multimodal_ad/
+│   ├── data/              # manifest, labeling, OASIS-3 adapter, volumes,
+│   │                      # augmentation, splits, synthetic generator
+│   ├── models/            # 3D CNN, training, evaluation, Grad-CAM, regions
+│   └── cli.py             # synthetic data pipeline quickstart CLI
+├── tests/                 # pytest suite (data/, models/, CLI, smoke tests)
 ├── docs/                  # this documentation site's Markdown source
 ├── zensical.toml          # documentation site config
 ├── *.ipynb                # legacy Colab notebooks (excluded from lint/format)
@@ -73,7 +82,10 @@ just docs-build   # strict build (warnings fail the build) into ./site
 
 A common target-state pattern is for `.ipynb` files to become thin,
 mostly-markdown notebooks that import and call a stable `multimodal_ad`
-API. That is **explicitly deferred**: the data-loading and model APIs the
-notebooks would call don't exist yet, and are being designed in the
-data-pipeline and training-port PRs. Rewriting notebooks against an API
-that doesn't exist yet would produce speculative, likely-wrong code.
+API. That is **still deferred**, even though the data (`multimodal_ad.data`)
+and model (`multimodal_ad.models`) APIs the notebooks would call now
+exist and are stable enough to build on. Rewriting the five legacy
+notebooks against that API, and validating the result against real
+OASIS-3 data, is tracked as follow-up work (see the
+[README roadmap](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/README.md#roadmap)),
+not done in this documentation pass.

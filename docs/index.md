@@ -18,24 +18,33 @@ PET volumes from [OASIS-3](https://www.oasis-brains.org/), separately and
 via late-fusion, to classify demented vs. non-demented subjects, then uses
 Grad-CAM to relate model attention to known AD-affected brain regions.
 
-## Current status: migration in progress
+## Current status: data + model pipeline ported, not validated on real data
 
-!!! warning "Read this before assuming anything works"
+!!! warning "Read this before assuming results are reproduced"
     This repository is being migrated from a set of exploratory Google
     Colab notebooks to a proper `src/` layout Python package
-    (`multimodal_ad`). **As of this documentation, no scientific code has
-    been ported.** The package is a scaffold: it imports, has a version
-    number, and a smoke test. The MRI/PET preprocessing, model
-    architectures, and Grad-CAM pipeline described in the paper only exist
-    today in the legacy notebooks at the repository root
-    (`Dataset_MRI.ipynb`, `Dataset_PET.ipynb`, `Training.ipynb`,
-    `Heatmaps.ipynb`, `exploration.ipynb`).
+    (`multimodal_ad`). The **data pipeline** (`multimodal_ad.data`:
+    manifest, labeling, the local OASIS-3 adapter, volume preprocessing,
+    augmentation, subject-wise splitting, and a synthetic data generator)
+    and the **model pipeline** (`multimodal_ad.models`: 3D CNN builders,
+    training, evaluation, Grad-CAM, AAL2 region ranking) have both been
+    ported from the legacy notebooks.
+
+    **What has not happened**: validation against real OASIS-3 data, or
+    reproduction of the paper's published metrics. Every automated test
+    here runs against synthetic, generated-on-the-fly data (see
+    [Data access & contracts](data-access.md)). Several implementation
+    ambiguities in the original notebooks (frame depth, fusion head
+    shape, CV fold scheme, early-stopping patience, diagnosis-labeling
+    edge cases) are resolved as an explicit, documented choice per
+    module, not a confirmed match to whatever produced the paper's
+    numbers.
 
     See [Reproducibility](reproducibility.md) for exactly what does and
     does not run today, and the
-    [legacy notebook inventory](legacy-notebooks-inventory.md) for a full
-    behavior audit of those notebooks, including open ambiguities that
-    must be resolved with the paper authors before porting.
+    [legacy notebook inventory](legacy-notebooks-inventory.md) for the
+    full behavior audit and open ambiguities that still need the paper
+    authors' input.
 
 ## Where to go next
 
@@ -53,19 +62,21 @@ Grad-CAM to relate model attention to known AD-affected brain regions.
 
 1. **Phase 0/1 (done)** — project foundation: `src/` layout, `uv`
    dependency management, lint/type/test tooling, CI, this documentation.
-2. **Phase 2 (in progress, separate PR)** — port the data pipeline
-   (`Dataset_MRI.ipynb`, `Dataset_PET.ipynb`) into `multimodal_ad`, with
-   synthetic fixtures for tests since real OASIS-3 data cannot be
-   redistributed (see [Data access & contracts](data-access.md)).
-3. **Phase 3 (planned)** — port model architectures and training loop
-   (`Training.ipynb`), replacing the Colab/DagsHub-`input()`-based
-   experiment tracking with a non-interactive, reproducible setup.
-4. **Phase 4 (planned)** — port Grad-CAM interpretability
-   (`Heatmaps.ipynb`, `exploration.ipynb`).
-5. **Phase 5 (planned)** — replace the legacy `.ipynb` files with thin
-   notebooks that call into the ported `multimodal_ad` package, once their
-   APIs are stable. This is explicitly **not** done in this documentation
-   PR: notebook APIs depend on the data and model ports above.
+2. **Phase 2a (done)** — typed data pipeline (`multimodal_ad.data`)
+   ported from `Dataset_MRI.ipynb`/`Dataset_PET.ipynb`, with a synthetic
+   NIfTI/manifest generator so tests never need real OASIS-3 data (see
+   [Data access & contracts](data-access.md)).
+3. **Phase 2b (done)** — model architectures, training loop, evaluation
+   metrics, Grad-CAM, and AAL2 region ranking (`multimodal_ad.models`)
+   ported from `Training.ipynb`/`Heatmaps.ipynb`/`exploration.ipynb`,
+   with MLflow/DagsHub's interactive tracking dropped rather than
+   replaced (see [Methodology](methodology.md)).
+4. **Phase 3 (planned, not started)** — replace the legacy `.ipynb` files
+   with thin notebooks that call into the now-stable `multimodal_ad` API,
+   and pursue real-OASIS-3 validation/metric reproduction once the open
+   ambiguities in the
+   [legacy notebook inventory](legacy-notebooks-inventory.md#summary-what-must-be-resolved-before-phase-2-scientific-code-porting)
+   are resolved with the paper authors.
 
 ## Contributing
 

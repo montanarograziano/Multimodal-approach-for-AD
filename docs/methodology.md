@@ -64,11 +64,38 @@ per [`CITATION.cff`](https://github.com/montanarograziano/Multimodal-approach-fo
 }
 ```
 
-## What is *not* yet ported
+## Ported, with documented divergences and open ambiguities
 
-The exact retained implementation details (frame depth, fusion head shape,
-early-stopping patience, CV fold scheme, diagnosis-regex edge cases) have
-open ambiguities across notebook cells that must be resolved with the
-paper authors before Phase 2+ ports them into `multimodal_ad`. See the
+`multimodal_ad.data` and `multimodal_ad.models` now implement the above
+(see [API reference](api.md)), but several implementation details the
+legacy notebooks left ambiguous across cells (frame depth, fusion head
+shape, early-stopping patience, CV fold scheme, diagnosis-regex edge
+cases) are resolved as an explicit, documented default per module rather
+than a confirmed match to whatever produced the paper's published numbers.
+For example:
+
+- **Frame depth**: `data.volumes.ProcessingConfig` defaults to
+  `n_frames=50` (matching the paper's reported `(128, 128, 50)` input),
+  exposed as a config field since the notebooks also use 20 and 30 in
+  other cells.
+- **Fusion head**: `models.architecture.build_fusion_model` implements the
+  non-buggy of `Training.ipynb`'s two conflicting `get_merged()`
+  definitions (`Dense(128, relu)` head); the other definition discards an
+  unused `Dense(4, relu)` layer via an apparent copy-paste bug.
+- **Grad-CAM**: `models.gradcam` ports the notebook's unused, hand-written
+  `tf.GradientTape`-based recipe (generalized to 3D) instead of the
+  actually-used `tf-keras-vis` path, which relied on a fragile numeric
+  layer offset (`penultimate_layer=-7`); `tf-keras-vis` is no longer a
+  dependency.
+- **Experiment tracking**: the notebooks' interactive, `input()`-prompted
+  MLflow/DagsHub tracking is dropped entirely, not replaced; `train_model`
+  returns typed results (history, evaluation metrics) instead.
+
+See each module's docstring
+(`multimodal_ad.data.volumes`, `.augmentation`, `.oasis`;
+`multimodal_ad.models.architecture`, `.training`, `.gradcam`, `.regions`)
+for the full reasoning behind each choice, and the
 ["Summary: what must be resolved before Phase 2"](legacy-notebooks-inventory.md#summary-what-must-be-resolved-before-phase-2-scientific-code-porting)
-section of the notebook inventory.
+section of the notebook inventory for the ambiguities that still need the
+paper authors' input before any of this can be called a confirmed
+reproduction.
