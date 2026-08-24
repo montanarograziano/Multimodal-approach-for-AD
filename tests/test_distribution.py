@@ -2,11 +2,10 @@
 
 Builds both the sdist and wheel into a temporary directory (never the repo's
 own `dist/`, to avoid a build-inside-build trap) and asserts the installable
-package files are present while prohibited research artifacts (root
-`.nii`/`.npy` volumes, `samples/`, notebooks, docs site sources, tests,
-agent/CI config) are absent. See `docs/asset-provenance.md` for why those
-root binaries are flagged as unresolved potentially-real OASIS-3 assets that
-must never ship in a redistributable package artifact.
+package files are present while non-package historical research assets
+(root `.nii`/`.npy` volumes, `samples/`, notebooks, docs site sources,
+tests, agent/CI config) are absent from the redistributable package
+artifact.
 """
 
 from __future__ import annotations

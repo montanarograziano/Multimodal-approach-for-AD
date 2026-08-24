@@ -31,7 +31,7 @@ See [Installation](installation.md) for setup and the command table.
 │   └── legacy/            # original Colab notebooks, preserved byte-for-byte
 ├── docs/                  # this documentation site's Markdown source
 ├── zensical.toml          # documentation site config
-├── mri1.nii, *.npy        # historical data artifacts, see asset provenance ledger
+├── mri1.nii, *.npy        # historical data artifacts, see the legacy notebook inventory
 ├── samples/                # small figure PNGs
 ├── AAL2_Atlas_Labels.csv  # AAL2 atlas region labels
 ├── pyproject.toml, uv.lock

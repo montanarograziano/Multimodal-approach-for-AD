@@ -63,7 +63,7 @@ AD-affected brain regions.
 │   └── legacy/                       # original Colab notebooks, preserved byte-for-byte
 ├── docs/                  # documentation site source (Markdown) + notebook inventory
 ├── zensical.toml          # documentation site config
-├── mri1.nii, *.npy        # historical data artifacts — see the asset provenance ledger
+├── mri1.nii, *.npy        # historical data artifacts, see the legacy notebook inventory
 ├── samples/               # small figure PNGs referenced by this README
 ├── AAL2_Atlas_Labels.csv  # AAL2 atlas region labels (region name -> intensity)
 ├── pyproject.toml, uv.lock
@@ -158,11 +158,7 @@ the user already has on disk; it never downloads or mirrors anything).
 Every test in this repository, including for the OASIS adapter, uses
 synthetic fixtures matching the real data's shape/dtype contract
 (`multimodal_ad.data.synthetic`), never real scans. See
-[data access & contracts](https://montanarograziano.github.io/Multimodal-approach-for-AD/data-access/)
-and the
-[asset provenance ledger](https://montanarograziano.github.io/Multimodal-approach-for-AD/asset-provenance/)
-(which flags unresolved-provenance binary artifacts already in this
-repository's history).
+[data access & contracts](https://montanarograziano.github.io/Multimodal-approach-for-AD/data-access/).
 
 ## Model pipeline
 

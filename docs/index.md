@@ -53,7 +53,6 @@ Grad-CAM to relate model attention to known AD-affected brain regions.
 | Understand the scientific method | [Methodology](methodology.md) |
 | Set up the project locally | [Installation](installation.md) |
 | Understand what data I can and can't use | [Data access & contracts](data-access.md) |
-| Know what's provenance-checked vs. unknown in committed binary assets | [Asset provenance ledger](asset-provenance.md) |
 | Know what's runnable today vs. planned | [Reproducibility](reproducibility.md) |
 | Contribute code | [Development & testing](development.md) |
 | Browse the package API | [API reference](api.md) |

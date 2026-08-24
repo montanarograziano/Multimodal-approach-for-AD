@@ -17,10 +17,7 @@ ADRC). Key constraints:
 - Aggregate, non-reidentifiable derived artifacts (e.g., population-level
   mean heatmaps across many subjects) are a lower-risk category, but are
   still subject to the DUA's terms on redistribution and must be reviewed
-  before committing. See the
-  [asset provenance ledger](asset-provenance.md) for the artifacts already
-  in this repository's history, several of which predate this policy and
-  have **unresolved provenance**.
+  before committing.
 - Code in this repository that expects OASIS-3 data must read it from a
   user-provided local path (never a hardcoded Colab/Drive path, and never
   fetched automatically), consistent with the DUA's terms.
