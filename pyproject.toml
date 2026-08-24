@@ -24,6 +24,7 @@ science = [
 
 [dependency-groups]
 dev = [
+    "prek>=0.2.9",
     "pyrefly>=0.13.1",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",

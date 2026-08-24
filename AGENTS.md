@@ -38,11 +38,12 @@ just lint        # ruff check .
 just typecheck   # pyrefly check
 just test        # pytest
 just check       # lint + format check + typecheck + test (CI-equivalent)
-just hooks       # prek run --all-files
+just hooks       # uv run prek run --all-files
 ```
 
 Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
-`uv run ruff format --check .`, `uv run pyrefly check`, `uv run pytest`.
+`uv run ruff format --check .`, `uv run pyrefly check`, `uv run pytest`,
+`uv run prek run --all-files`.
 
 ## Conventions
 

@@ -32,4 +32,4 @@ check: lint
 
 # Run all prek hooks against the whole repo
 hooks:
-    prek run --all-files
+    uv run prek run --all-files
