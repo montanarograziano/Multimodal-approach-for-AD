@@ -103,6 +103,9 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# agent scratch workspace (reviewer plans, session artifacts)
+.pi/
+
 # mypy
 .mypy_cache/
 .dmypy.json

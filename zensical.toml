@@ -56,5 +56,7 @@ footnotes = {}
 tables = {}
 toc.permalink = true
 pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
 pymdownx.highlight.anchor_linenums = true
 pymdownx.superfences = {}
