@@ -13,6 +13,21 @@ choice, in the inventory). This port falls back to the full-frame bounding
 box for such slices instead of raising, so a single degenerate slice does
 not crash the whole volume's processing.
 
+**Preprocessing order (fidelity fix)**: the legacy `process_scan` calls
+`normalize(volume)` on the *full* loaded/frame-averaged volume, then
+`resize_to_input_shape(volume)` (central-slice, brain-crop, resize) on the
+already-normalized data, with no renormalization afterward. `process_volume`
+replicates that order exactly: normalize first, using the full volume's own
+min/max, then slice/crop/resize. An earlier version of this port normalized
+*after* cropping, which rescales each scan against its post-crop min/max
+instead of the whole scan's, silently changing every pixel's relative
+intensity whenever the crop excludes the volume's true extrema (see
+`tests/data/test_volumes.py::test_process_scan_normalizes_before_crop_matches_legacy_reference`
+for a regression case that distinguishes the two orders). There is
+deliberately no "optimized" post-crop-normalize preset: nothing in this
+codebase needs one, and adding a config knob for an already-known-wrong
+behavior would just be a footgun.
+
 **Open ambiguity** (see inventory, open question 1): the legacy notebooks
 process 20, 30, or 50 central frames in different cells, and it is not
 determinable from the notebooks alone which produced the paper's reported
@@ -183,25 +198,40 @@ def crop_and_resize_frame(frame: np.ndarray, box: BoundingBox, size: int) -> np.
     return cv2.resize(cropped, (size, size), interpolation=cv2.INTER_LINEAR)
 
 
-def process_scan(
-    path: Path, modality: Modality, config: ProcessingConfig | None = None
+def process_volume(
+    volume: np.ndarray, modality: Modality, config: ProcessingConfig | None = None
 ) -> np.ndarray:
-    """Load, average, center-slice, brain-crop, resize, and normalize a scan.
+    """Normalize, center-slice, brain-crop, and resize an already-loaded volume.
 
-    Returns a float32 array of shape `(image_size, image_size, n_frames)`
-    with values in `[0, 1]`.
+    `volume` should be a raw (or 4D-frame-averaged) volume, e.g. straight out
+    of `load_volume`/`average_4d_frames`, or a `data.augmentation.augment_volume`
+    output (augmentation runs on raw volumes *before* this function; see that
+    module). Returns a float32 array of shape `(image_size, image_size,
+    n_frames)` with values in `[0, 1]`, normalized against the full input
+    volume's own min/max (see module docstring: "Preprocessing order").
     """
     config = config or ProcessingConfig()
     box_params = config.box_params or default_box_params(modality)
 
-    volume = load_volume(path)
-    volume = average_4d_frames(volume)
-    central = central_axial_slices(volume, config.n_frames)
+    normalized = normalize_intensity(volume)
+    central = central_axial_slices(normalized, config.n_frames)
     box = find_brain_bounding_box(central, box_params)
 
     frames = [
         crop_and_resize_frame(central[..., i], box, config.image_size)
         for i in range(central.shape[-1])
     ]
-    stacked = np.stack(frames, axis=-1)
-    return normalize_intensity(stacked)
+    return np.stack(frames, axis=-1)
+
+
+def process_scan(
+    path: Path, modality: Modality, config: ProcessingConfig | None = None
+) -> np.ndarray:
+    """Load a scan file and run it through `process_volume`.
+
+    Returns a float32 array of shape `(image_size, image_size, n_frames)`
+    with values in `[0, 1]`.
+    """
+    volume = load_volume(path)
+    volume = average_4d_frames(volume)
+    return process_volume(volume, modality, config)

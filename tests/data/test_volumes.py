@@ -8,7 +8,9 @@ import pytest
 
 from multimodal_ad.data.manifest import Modality
 from multimodal_ad.data.volumes import (
+    MRI_BRAIN_BOX_PARAMS,
     BoundingBox,
+    BrainBoxParams,
     ProcessingConfig,
     average_4d_frames,
     central_axial_slices,
@@ -17,6 +19,7 @@ from multimodal_ad.data.volumes import (
     load_volume,
     normalize_intensity,
     process_scan,
+    process_volume,
 )
 
 
@@ -141,3 +144,83 @@ def test_process_scan_default_config_matches_paper_shape(nifti_file: Path) -> No
     config = ProcessingConfig(n_frames=10, image_size=32)
     result = process_scan(nifti_file, Modality.PET, config)
     assert result.shape == (32, 32, 10)
+
+
+def _legacy_faithful_reference(
+    volume: np.ndarray, config: ProcessingConfig, box_params: BrainBoxParams
+) -> np.ndarray:
+    """Reimplements the legacy `process_scan`'s order independently of `process_volume`.
+
+    `Dataset_MRI.ipynb`'s `process_scan` calls `normalize(volume)` (full
+    volume, own min/max) *then* `resize_to_input_shape` (central-slice,
+    brain-crop, resize), with no renormalization afterward. Brain-box
+    detection itself (`find_brain_bounding_box`/`_slice_bounding_box`) is
+    unaffected by *when* normalization happens: it independently min-max
+    rescales each slice to `uint8` for Otsu thresholding, so reusing that
+    helper here (rather than duplicating the Otsu/contour pipeline) isolates
+    exactly the one variable this test cares about: the order of the global
+    normalize step relative to cropping.
+    """
+    normalized = normalize_intensity(volume)
+    central = central_axial_slices(normalized, config.n_frames)
+    box = find_brain_bounding_box(central, box_params)
+    frames = [
+        crop_and_resize_frame(central[..., i], box, config.image_size)
+        for i in range(central.shape[-1])
+    ]
+    return np.stack(frames, axis=-1)
+
+
+def _buggy_post_crop_reference(
+    volume: np.ndarray, config: ProcessingConfig, box_params: BrainBoxParams
+) -> np.ndarray:
+    """The pre-fix behavior: crop/resize raw values, *then* normalize.
+
+    Normalizes against the crop's own local min/max instead of the full
+    scan's, which silently changes every pixel's relative intensity
+    whenever the crop excludes the scan's true extrema. Kept here only to
+    prove the default order actually differs from this one.
+    """
+    central = central_axial_slices(volume, config.n_frames)
+    box = find_brain_bounding_box(central, box_params)
+    frames = [
+        crop_and_resize_frame(central[..., i], box, config.image_size)
+        for i in range(central.shape[-1])
+    ]
+    return normalize_intensity(np.stack(frames, axis=-1))
+
+
+def test_process_scan_normalizes_before_crop_matches_legacy_reference() -> None:
+    """Regression test: extrema *outside* the crop must still affect the output.
+
+    Places a huge-value pixel far outside the brain blob (and thus outside
+    the detected crop region) but within the sliced depth range. Faithful
+    (pre-crop, global) normalization must be dominated by that extremum
+    everywhere, including inside the crop; a buggy post-crop normalization
+    would never see it and rescale the crop's own (much smaller) local
+    range to `[0, 1]` instead, producing a visibly different result.
+    """
+    shape = (128, 128, 16)
+    rng = np.random.default_rng(0)
+    volume = rng.normal(50, 5, shape)
+    lo, hi = np.array(shape) // 4, np.array(shape) - np.array(shape) // 4
+    blob_shape = (hi[0] - lo[0], hi[1] - lo[1], shape[2])
+    volume[lo[0] : hi[0], lo[1] : hi[1], :] = rng.normal(500, 50, blob_shape)
+    volume = np.clip(volume, 0, None).astype(np.float32)
+    # Extremum in a far corner, well outside the blob/crop, present in every
+    # sliced depth index so it survives `central_axial_slices` regardless of
+    # `n_frames`.
+    volume[0, 0, :] = 1.0e5
+
+    config = ProcessingConfig(n_frames=16, image_size=32)
+    faithful = _legacy_faithful_reference(volume, config, MRI_BRAIN_BOX_PARAMS)
+    buggy = _buggy_post_crop_reference(volume, config, MRI_BRAIN_BOX_PARAMS)
+
+    actual = process_volume(volume, Modality.MRI, config)
+    np.testing.assert_array_equal(actual, faithful)
+    assert not np.allclose(actual, buggy, atol=1e-2)
+    # The buggy order stretches the crop's own local range to fill [0, 1];
+    # the faithful order is dominated by the far-away extremum and stays
+    # compressed near 0 everywhere inside the crop.
+    assert actual.max() < 0.05
+    assert buggy.max() > 0.5

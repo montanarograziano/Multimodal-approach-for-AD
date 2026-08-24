@@ -14,6 +14,7 @@ ordering (see `docs/legacy-notebooks-inventory.md`).
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -72,7 +73,7 @@ class ScanManifest:
     def __len__(self) -> int:
         return len(self.records)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ScanRecord]:
         return iter(self.records)
 
     @classmethod

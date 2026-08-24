@@ -18,7 +18,13 @@ from multimodal_ad.data.labeling import classify_diagnosis_row, smooth_temporal_
 from multimodal_ad.data.manifest import ManifestValidationError, ScanManifest
 from multimodal_ad.data.splits import assert_no_subject_leakage, subject_train_test_split
 from multimodal_ad.data.synthetic import SyntheticDatasetConfig, generate_synthetic_dataset
-from multimodal_ad.data.volumes import ProcessingConfig, process_scan
+from multimodal_ad.data.volumes import (
+    ProcessingConfig,
+    average_4d_frames,
+    load_volume,
+    process_scan,
+    process_volume,
+)
 
 
 @pytest.fixture
@@ -61,7 +67,16 @@ def test_full_pipeline_split_has_no_subject_overlap(synthetic_manifest: ScanMani
 def test_augmentation_applied_only_after_split_does_not_leak_subjects(
     synthetic_manifest: ScanManifest,
 ) -> None:
-    """Augmenting only the train split must not introduce test-subject data."""
+    """Augmenting only the train split must not introduce test-subject data.
+
+    Also exercises the required order: subjects are split *first*; only
+    train-split *raw* volumes are augmented (`augment_volume` operates on
+    raw, full-resolution volumes, matching the legacy notebook's
+    `transform()` which ran before any normalize/crop/resize); the
+    augmented raw volume is then run through `process_volume` to get a
+    model-ready array, exactly the path a non-augmented scan takes via
+    `process_scan` (load -> average -> process_volume).
+    """
     df = synthetic_manifest.to_dataframe()
     train_df, test_df = subject_train_test_split(df, test_size=0.3, seed=1234)
 
@@ -71,8 +86,10 @@ def test_augmentation_applied_only_after_split_does_not_leak_subjects(
 
     augmented_subjects = set()
     for record in train_records[:3]:
-        volume = process_scan(record.file_path, record.modality, processing_config)
-        augment_volume(volume, rng)
+        raw_volume = average_4d_frames(load_volume(record.file_path))
+        augmented_raw = augment_volume(raw_volume, rng)
+        processed = process_volume(augmented_raw, record.modality, processing_config)
+        assert processed.shape == (16, 16, 8)
         augmented_subjects.add(record.subject_id)
 
     # Every augmented sample's subject must have come from the train split,
