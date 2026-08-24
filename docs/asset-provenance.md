@@ -49,6 +49,17 @@ and looked up first-introduction commit via `git log --follow`.
   decision on history rewriting (`git filter-repo` or equivalent) that is
   out of scope for a documentation PR.
 
+## Package distribution
+
+`uv build`'s sdist (`tool.hatch.build.targets.sdist.only-include` in
+`pyproject.toml`) uses a strict allowlist: only `src/multimodal_ad`,
+`pyproject.toml`, `README.md`, `LICENSE`, and `CITATION.cff`. None of the
+flagged files above (or `samples/`, `notebooks/`, `docs/`, `tests/`) are
+included in the sdist or wheel; see `tests/test_distribution.py` for the
+regression test that builds both artifacts and asserts this. This mitigates
+**redistribution via PyPI/package artifacts only**; it does not remove these
+files from the working tree or from git history (see follow-up below).
+
 ## Recommended follow-up (not performed here)
 
 1. Ask the paper authors directly whether `mri1.nii`,
