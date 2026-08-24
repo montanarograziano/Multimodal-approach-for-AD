@@ -46,6 +46,10 @@ dev = [
 notebooks = [
     "ipykernel>=6.29.5",
     "notebook>=7.3.2",
+    # Only used by the notebooks under `notebooks/` to display slices/plots;
+    # not a `multimodal_ad` runtime dependency (see `science` extra above,
+    # which is a separate installable-extra path for the same packages).
+    "matplotlib>=3.10.0",
 ]
 docs = [
     "zensical>=0.0.57",
@@ -54,6 +58,19 @@ docs = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+# Strict allowlist: only what's needed to build/install the package.
+# Non-package historical research assets (root mri1.nii/*.npy, samples/,
+# notebooks/, the docs site, tests/, CI/agent config) are intentionally
+# excluded; Hatch's default sdist otherwise includes every VCS-tracked file.
+only-include = [
+    "src/multimodal_ad",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "CITATION.cff",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/multimodal_ad"]

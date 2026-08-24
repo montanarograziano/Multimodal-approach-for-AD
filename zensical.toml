@@ -13,7 +13,6 @@ nav = [
   { "Methodology" = "methodology.md" },
   { "Installation" = "installation.md" },
   { "Data access & contracts" = "data-access.md" },
-  { "Asset provenance ledger" = "asset-provenance.md" },
   { "Reproducibility" = "reproducibility.md" },
   { "Development & testing" = "development.md" },
   { "API reference" = "api.md" },

@@ -65,3 +65,32 @@ jobs:
 
       - name: Model smoke tests (CPU, tiny shapes)
         run: uv run pytest tests/models
+
+  notebook-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install
+
+      - name: Install dependencies (locked, `model` extra + `notebooks` group)
+        run: uv sync --locked --extra model --group notebooks
+
+      - name: Notebook structural checks (thinness, forbidden patterns, cleared outputs)
+        run: uv run pytest tests/notebooks
+
+      - name: Execute every thin notebook from a clean kernel (CPU, tiny shapes)
+        run: |
+          uv run --group notebooks jupyter nbconvert --to notebook --execute --stdout \
+            --ExecutePreprocessor.timeout=300 notebooks/*.ipynb > /dev/null
+        # notebooks/legacy/*.ipynb are historical artifacts, not executed here
+        # (see docs/legacy-notebooks-inventory.md); only notebooks/*.ipynb runs.
+        # (mirrors `just notebooks-execute`; inlined since CI doesn't install `just`)

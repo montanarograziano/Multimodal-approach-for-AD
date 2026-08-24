@@ -36,11 +36,11 @@ AD-affected brain regions.
 > depth, fusion head shape, CV fold scheme, early-stopping patience,
 > diagnosis-labeling edge cases) are resolved here as an explicit,
 > documented choice, not a confirmed match to what produced the paper's
-> numbers. The five legacy notebooks at the repository root
-> (`Dataset_MRI.ipynb`, `Dataset_PET.ipynb`, `Training.ipynb`,
-> `Heatmaps.ipynb`, `exploration.ipynb`) are preserved as historical
-> artifacts and have not yet been rewritten as thin wrappers around the
-> new package (see [Roadmap](#roadmap)). See the
+> numbers. The five legacy notebooks (plus `images/3D Brain Plot.ipynb`)
+> are preserved byte-for-byte as historical artifacts under
+> `notebooks/legacy/`; small, newcomer-oriented thin notebooks under
+> `notebooks/` now call into the new package on synthetic data (see
+> [Notebooks](#notebooks)). See the
 > [legacy notebook inventory](docs/legacy-notebooks-inventory.md) for the
 > full behavior audit and open ambiguities, and the
 > [reproducibility docs](https://montanarograziano.github.io/Multimodal-approach-for-AD/reproducibility/)
@@ -55,16 +55,15 @@ AD-affected brain regions.
 │   │                      # augmentation, splits, synthetic generator
 │   ├── models/            # 3D CNN, training, evaluation, Grad-CAM, regions
 │   └── cli.py             # synthetic data pipeline quickstart CLI
-├── tests/                 # pytest suite (data/, models/, CLI, smoke tests)
+├── tests/                 # pytest suite (data/, models/, CLI, notebooks, smoke tests)
+├── notebooks/
+│   ├── 01-data-quickstart.ipynb      # thin: data pipeline on synthetic data
+│   ├── 02-tiny-model-workflow.ipynb  # thin: build/train/evaluate/save-reload
+│   ├── 03-explainability.ipynb       # thin: Grad-CAM + AAL2 region ranking
+│   └── legacy/                       # original Colab notebooks, preserved byte-for-byte
 ├── docs/                  # documentation site source (Markdown) + notebook inventory
 ├── zensical.toml          # documentation site config
-├── Dataset_MRI.ipynb      # legacy: MRI dataset construction (superseded by multimodal_ad.data)
-├── Dataset_PET.ipynb      # legacy: PET dataset construction (superseded by multimodal_ad.data)
-├── Training.ipynb         # legacy: model training (superseded by multimodal_ad.models)
-├── Heatmaps.ipynb         # legacy: Grad-CAM heatmaps (superseded by multimodal_ad.models)
-├── exploration.ipynb      # legacy: AAL2 zone ranking (superseded by multimodal_ad.models.regions)
-├── images/                # separate Poetry sub-project generating paper figures
-├── mri1.nii, *.npy        # historical data artifacts — see the asset provenance ledger
+├── mri1.nii, *.npy        # historical data artifacts, see the legacy notebook inventory
 ├── samples/               # small figure PNGs referenced by this README
 ├── AAL2_Atlas_Labels.csv  # AAL2 atlas region labels (region name -> intensity)
 ├── pyproject.toml, uv.lock
@@ -96,6 +95,8 @@ just lint             # ruff check
 just hooks            # run all prek hooks
 just docs-serve       # live-reload documentation preview
 just docs-build       # strict documentation build
+just notebooks-launch  # launch Jupyter against notebooks/
+just notebooks-execute # execute every thin notebook from a clean kernel
 ```
 
 Full command reference:
@@ -117,6 +118,34 @@ code paths real OASIS-3 data would go through, on data with no clinical
 meaning. See [`src/multimodal_ad/cli.py`](src/multimodal_ad/cli.py) and
 `python -m multimodal_ad.cli --help` for options.
 
+## Notebooks
+
+`notebooks/*.ipynb` are small, newcomer-oriented notebooks that call into
+`multimodal_ad` on deterministic synthetic data, no OASIS-3 access, no
+Colab, no manual paths:
+
+- [`01-data-quickstart.ipynb`](notebooks/01-data-quickstart.ipynb): generate
+  a synthetic manifest/dataset, validate/split/process it, visualize a
+  central slice.
+- [`02-tiny-model-workflow.ipynb`](notebooks/02-tiny-model-workflow.ipynb):
+  build a reduced-filter 3D model, one bounded train/evaluate/save-reload
+  flow, correct metrics (needs the `model` extra).
+- [`03-explainability.ipynb`](notebooks/03-explainability.ipynb): native
+  Grad-CAM and AAL2 region ranking on synthetic/toy arrays (needs the
+  `model` extra).
+
+```bash
+uv sync --locked --extra model --group notebooks
+just notebooks-launch
+```
+
+All reusable logic lives in `src/`; these notebooks only orchestrate and
+display. Commit with cleared outputs (`just notebooks-clear`); CI
+re-executes every notebook from a clean kernel. The original Colab
+notebooks are preserved byte-for-byte under `notebooks/legacy/` (see the
+[legacy notebook inventory](docs/legacy-notebooks-inventory.md)); they are
+not executable outside their original Colab/Drive environment.
+
 ## Data access
 
 Real data comes from **OASIS-3**, distributed under a Data Use Agreement.
@@ -129,11 +158,7 @@ the user already has on disk; it never downloads or mirrors anything).
 Every test in this repository, including for the OASIS adapter, uses
 synthetic fixtures matching the real data's shape/dtype contract
 (`multimodal_ad.data.synthetic`), never real scans. See
-[data access & contracts](https://montanarograziano.github.io/Multimodal-approach-for-AD/data-access/)
-and the
-[asset provenance ledger](https://montanarograziano.github.io/Multimodal-approach-for-AD/asset-provenance/)
-(which flags unresolved-provenance binary artifacts already in this
-repository's history).
+[data access & contracts](https://montanarograziano.github.io/Multimodal-approach-for-AD/data-access/).
 
 ## Model pipeline
 
@@ -204,11 +229,13 @@ and why. Full details:
 3. **Phase 2b (done)**: model training/evaluation/Grad-CAM/region-ranking
    (`multimodal_ad.models`) ported from `Training.ipynb`/
    `Heatmaps.ipynb`/`exploration.ipynb`.
-4. **Phase 3 (planned, not started)**: replace the legacy `.ipynb` files
-   with thin notebooks that call into the now-stable `multimodal_ad` API,
-   and pursue real-OASIS-3 validation/metric reproduction with the paper
-   authors' input on the open ambiguities tracked in the
-   [legacy notebook inventory](docs/legacy-notebooks-inventory.md).
+4. **Phase 3 (done)**: added thin notebooks under `notebooks/` calling
+   into the stable `multimodal_ad` API on synthetic data, and moved the
+   original Colab notebooks to `notebooks/legacy/` (preserved
+   byte-for-byte). Real-OASIS-3 validation/metric reproduction, with the
+   paper authors' input on the open ambiguities tracked in the
+   [legacy notebook inventory](docs/legacy-notebooks-inventory.md), remains
+   future work.
 
 ## Contributing
 

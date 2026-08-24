@@ -53,7 +53,6 @@ Grad-CAM to relate model attention to known AD-affected brain regions.
 | Understand the scientific method | [Methodology](methodology.md) |
 | Set up the project locally | [Installation](installation.md) |
 | Understand what data I can and can't use | [Data access & contracts](data-access.md) |
-| Know what's provenance-checked vs. unknown in committed binary assets | [Asset provenance ledger](asset-provenance.md) |
 | Know what's runnable today vs. planned | [Reproducibility](reproducibility.md) |
 | Contribute code | [Development & testing](development.md) |
 | Browse the package API | [API reference](api.md) |
@@ -71,12 +70,13 @@ Grad-CAM to relate model attention to known AD-affected brain regions.
    ported from `Training.ipynb`/`Heatmaps.ipynb`/`exploration.ipynb`,
    with MLflow/DagsHub's interactive tracking dropped rather than
    replaced (see [Methodology](methodology.md)).
-4. **Phase 3 (planned, not started)** — replace the legacy `.ipynb` files
-   with thin notebooks that call into the now-stable `multimodal_ad` API,
-   and pursue real-OASIS-3 validation/metric reproduction once the open
-   ambiguities in the
+4. **Phase 3 (done)** — thin notebooks under `notebooks/` that call into
+   the `multimodal_ad` API on synthetic data; the five legacy notebooks
+   (plus `images/3D Brain Plot.ipynb`) moved byte-for-byte to
+   `notebooks/legacy/`. Real-OASIS-3 validation/metric reproduction
+   remains future work, pending resolution of the open ambiguities in the
    [legacy notebook inventory](legacy-notebooks-inventory.md#summary-what-must-be-resolved-before-phase-2-scientific-code-porting)
-   are resolved with the paper authors.
+   with the paper authors.
 
 ## Contributing
 
