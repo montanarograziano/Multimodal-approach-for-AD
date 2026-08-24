@@ -15,9 +15,16 @@ package (`multimodal_ad`). See `docs/legacy-notebooks-inventory.md` for a
 full behavior audit of the legacy notebooks before touching any scientific
 logic.
 
-**As of this PR, no scientific code has been ported yet.** The package is a
-scaffold. Do not assume `multimodal_ad` implements any of the notebooks'
-pipelines until a phase explicitly ports them.
+**As of this PR, the typed data pipeline (`multimodal_ad.data`) has been
+ported**: diagnosis normalization/labeling, a typed scan manifest, a local
+OASIS-3 layout adapter (no download/redistribution), volume
+loading/cropping/resizing, deterministic augmentation, and subject-wise
+splitting. Model training/inference (`Training.ipynb`, `Heatmaps.ipynb`,
+`exploration.ipynb`) has **not** been ported yet; do not assume
+`multimodal_ad` implements those until a later phase ports them. See
+`src/multimodal_ad/data/__init__.py` for the module map and
+`docs/legacy-notebooks-inventory.md` for the behavior audit each module's
+docstring cites.
 
 ## Environment
 
@@ -47,10 +54,14 @@ Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
 
 ## Conventions
 
-- Add production dependencies to `[project.optional-dependencies].science`
-  (heavy scientific stack: TensorFlow/Keras, NumPy, OpenCV, nibabel, etc.),
-  not to `[project.dependencies]`, until the package actually imports them.
-  Add dev tooling to `[dependency-groups].dev`. Notebook-only tooling
+- `[project.dependencies]` holds packages `multimodal_ad` unconditionally
+  imports at runtime (currently: nibabel, numpy, opencv-python, pandas,
+  scikit-learn, scipy, all used by `multimodal_ad.data`).
+  `[project.optional-dependencies].science` holds packages only needed by
+  code not yet ported or only used for specific features (TensorFlow/Keras,
+  tf-keras-vis, matplotlib, pillow). When a module starts unconditionally
+  importing a `science` package, move it to `[project.dependencies]`. Add
+  dev tooling to `[dependency-groups].dev`. Notebook-only tooling
   (ipykernel, notebook) goes in `[dependency-groups].notebooks`.
 - Legacy `.ipynb` files are **excluded from Ruff lint/format** (see
   `extend-exclude` in `pyproject.toml`) and are preserved as historical
@@ -65,8 +76,14 @@ Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
 
 ## Migration plan pointer
 
-Phase 0/1 (this PR): notebook inventory + project foundation (this file,
-`pyproject.toml`, `Justfile`, CI, lint/type/test scaffolding). Scientific
-code porting (Phase 2+) is a separate, stacked PR; see
-`docs/legacy-notebooks-inventory.md` for the open questions that must be
-resolved with the paper authors before that work starts.
+Phase 0/1: notebook inventory + project foundation (`pyproject.toml`,
+`Justfile`, CI, lint/type/test scaffolding). Phase 2a (this PR): typed data
+pipeline (`multimodal_ad.data`) ported from `Dataset_MRI.ipynb` /
+`Dataset_PET.ipynb`, with a synthetic NIfTI/manifest generator so the full
+data path is testable without OASIS-3. Phase 2b (future, stacked): model
+training/inference ported from `Training.ipynb` / `Heatmaps.ipynb` /
+`exploration.ipynb`. See `docs/legacy-notebooks-inventory.md` for the open
+questions (frame depth, fusion head, CV fold scheme, etc.) that must be
+resolved with the paper authors before Phase 2b starts; several data-path
+ambiguities are also documented inline in `multimodal_ad.data` module
+docstrings where this PR had to make an explicit, documented choice.

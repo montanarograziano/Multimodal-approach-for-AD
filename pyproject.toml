@@ -5,19 +5,22 @@ description = "Code for 'Automated Detection of Alzheimer's Disease: A Multi-mod
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13"
-dependencies = []
+# Unconditionally imported by src/multimodal_ad/data/*; must be runtime deps
+# (see AGENTS.md). TensorFlow/tf-keras-vis stay model-specific/optional since
+# no scientific code imports them yet.
+dependencies = [
+    "nibabel>=5.3.2",
+    "numpy>=2.2.1",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.15.1",
+]
 
 [project.optional-dependencies]
 science = [
     "matplotlib>=3.10.0",
-    "nibabel>=5.3.2",
-    "numpy>=2.2.1",
-    "opencv-python>=4.11.0.86",
-    "p-tqdm>=1.4.2",
-    "pandas>=2.2.3",
     "pillow>=11.1.0",
-    "scikit-learn>=1.6.1",
-    "scipy>=1.15.1",
     "tensorflow>=2.20.0",
     "tf-keras-vis>=0.8.7",
 ]
