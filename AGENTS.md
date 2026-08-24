@@ -15,16 +15,23 @@ package (`multimodal_ad`). See `docs/legacy-notebooks-inventory.md` for a
 full behavior audit of the legacy notebooks before touching any scientific
 logic.
 
-**As of this PR, the typed data pipeline (`multimodal_ad.data`) has been
-ported**: diagnosis normalization/labeling, a typed scan manifest, a local
-OASIS-3 layout adapter (no download/redistribution), volume
-loading/cropping/resizing, deterministic augmentation, and subject-wise
-splitting. Model training/inference (`Training.ipynb`, `Heatmaps.ipynb`,
-`exploration.ipynb`) has **not** been ported yet; do not assume
-`multimodal_ad` implements those until a later phase ports them. See
-`src/multimodal_ad/data/__init__.py` for the module map and
-`docs/legacy-notebooks-inventory.md` for the behavior audit each module's
-docstring cites.
+**The typed data pipeline (`multimodal_ad.data`) has been ported**:
+diagnosis normalization/labeling, a typed scan manifest, a local OASIS-3
+layout adapter (no download/redistribution), volume loading/cropping/
+resizing, deterministic augmentation, and subject-wise splitting.
+
+**As of this PR, the model/training/evaluation/explainability pipeline
+(`multimodal_ad.models`) has also been ported** from `Training.ipynb` and
+`Heatmaps.ipynb`: the 3D CNN architecture and its frozen/named/fusion
+variants, a training config/loop with deterministic seeding and `.keras`/
+legacy `.h5` save-load, accuracy/sensitivity/specificity/AUC evaluation,
+a native Grad-CAM, and AAL2 region-ranking utilities (`exploration.ipynb`).
+`multimodal_ad.models` imports TensorFlow unconditionally; install the
+`model` extra (`uv sync --extra model`) to use it. `multimodal_ad.data` and
+the CLI do not depend on TensorFlow. See
+`src/multimodal_ad/data/__init__.py` and `src/multimodal_ad/models/__init__.py`
+for the module maps, and `docs/legacy-notebooks-inventory.md` for the
+behavior audit each module's docstring cites.
 
 ## Environment
 

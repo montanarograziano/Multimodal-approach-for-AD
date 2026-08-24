@@ -580,18 +580,6 @@ wheels = [
 ]
 
 [[package]]
-name = "deprecated"
-version = "1.3.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "wrapt" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/49/85/12f0a49a7c4ffb70572b6c2ef13c90c88fd190debda93b23f026b25f9634/deprecated-1.3.1.tar.gz", hash = "sha256:b1b50e0ff0c1fddaa5708a2c6b0a6588bb09b892825ab2b214ac9ea9d92a5223", size = 2932523, upload-time = "2025-10-30T08:19:02.757Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl", hash = "sha256:597bfef186b6f60181535a29fbe44865ce137a5079f295b479886c82729d5f3f", size = 11298, upload-time = "2025-10-30T08:19:00.758Z" },
-]
-
-[[package]]
 name = "executing"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -771,19 +759,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/5f/f7/abb373e5757eaec4b922b92f97ec8d6d7e057cf06778247604fbc4e7c3f3/idna-3.19.tar.gz", hash = "sha256:5e0811a4383b21dc5838069f801c4fb62113b7447663d2530d2bd6e77b49bf15", size = 215237, upload-time = "2026-08-18T05:14:24.27Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/57/b0/0e52c878c53f245edd3a11020f20979b3f490f245af532c7cae3027754b5/idna-3.19-py3-none-any.whl", hash = "sha256:815e7be7a7806d54abb586dc943addc79e8b2ee16915059658cbeff4b1b43bf4", size = 68550, upload-time = "2026-08-18T05:14:22.343Z" },
-]
-
-[[package]]
-name = "imageio"
-version = "2.37.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "pillow" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/48/62/aa770a9307508d2a2a2c62d536a49347bffe9e55322db27838d3c93d0b07/imageio-2.37.4.tar.gz", hash = "sha256:e45cbc5e83502047fb138f7f585f7f105a136a57eea5f4b3cfc6ce1b52720bd3", size = 390173, upload-time = "2026-07-20T05:26:11.369Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/2d/ca050652104bab2cf55e569db2a178b1b61cb041fef28307f2db383f6d9f/imageio-2.37.4-py3-none-any.whl", hash = "sha256:1ab2e22c8debf700f24c3ac43e8f95f3b3a8110c83b93411e97b4b0b2cd1c7e6", size = 318000, upload-time = "2026-07-20T05:26:09.874Z" },
 ]
 
 [[package]]
@@ -1425,11 +1400,12 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+model = [
+    { name = "tensorflow" },
+]
 science = [
     { name = "matplotlib" },
     { name = "pillow" },
-    { name = "tensorflow" },
-    { name = "tf-keras-vis" },
 ]
 
 [package.dev-dependencies]
@@ -1455,10 +1431,9 @@ requires-dist = [
     { name = "pillow", marker = "extra == 'science'", specifier = ">=11.1.0" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "scipy", specifier = ">=1.15.1" },
-    { name = "tensorflow", marker = "extra == 'science'", specifier = ">=2.20.0" },
-    { name = "tf-keras-vis", marker = "extra == 'science'", specifier = ">=0.8.7" },
+    { name = "tensorflow", marker = "extra == 'model'", specifier = ">=2.20.0" },
 ]
-provides-extras = ["science"]
+provides-extras = ["model", "science"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2610,22 +2585,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8a/11/965c6fd8e5cc254f1fe142d547387da17a8ebfd75a3455f637c663fb38a0/terminado-0.18.1.tar.gz", hash = "sha256:de09f2c4b85de4765f7714688fff57d3e75bad1f909b589fde880460c753fd2e", size = 32701, upload-time = "2024-03-12T14:34:39.026Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/9e/2064975477fdc887e47ad42157e214526dcad8f317a948dee17e1659a62f/terminado-0.18.1-py3-none-any.whl", hash = "sha256:a4468e1b37bb318f8a86514f65814e1afc977cf29b3992a4500d9dd305dcceb0", size = 14154, upload-time = "2024-03-12T14:34:36.569Z" },
-]
-
-[[package]]
-name = "tf-keras-vis"
-version = "0.8.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "deprecated" },
-    { name = "imageio" },
-    { name = "packaging" },
-    { name = "pillow" },
-    { name = "scipy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/37/6b/fc46a4b7d8ca246ec7507e544c16f43d9ffe5389c41d54fa6e381e08e63d/tf-keras-vis-0.8.7.tar.gz", hash = "sha256:64ac1d1c46e9ef8dda036951cae62b494c49106817ba03e7c98e77c66bc4fe02", size = 29007, upload-time = "2024-03-25T12:13:36.631Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/1e/3e71aefff7d2da350f38b6eaee4e7a1d75a96878cca5c781a18973169286/tf_keras_vis-0.8.7-py3-none-any.whl", hash = "sha256:8313771e9c62f50f2cdbfa8b6d9b23c1aa52c5ec408dccf5b4f02bfd257b04fd", size = 52550, upload-time = "2024-03-25T12:13:34.391Z" },
 ]
 
 [[package]]

@@ -38,3 +38,27 @@ jobs:
 
       - name: Test
         run: uv run pytest
+        # Model tests (tests/models/) use `pytest.importorskip("tensorflow")`
+        # and are skipped here since TensorFlow is not installed (see
+        # `model-smoke` job below); this keeps normal data-pipeline CI fast.
+
+  model-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install
+
+      - name: Install dependencies (locked, with the `model` extra)
+        run: uv sync --locked --extra model
+
+      - name: Model smoke tests (CPU, tiny shapes)
+        run: uv run pytest tests/models

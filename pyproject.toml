@@ -18,11 +18,21 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Model/training/evaluation/Grad-CAM code (`multimodal_ad.models`) imports
+# TensorFlow unconditionally; kept optional so `multimodal_ad.data` and the
+# CLI install/run without pulling in TensorFlow. `tf-keras-vis`/`mlflow`
+# (used by the legacy notebooks for Grad-CAM and experiment tracking) are
+# intentionally dropped: Grad-CAM is now a native `tf.GradientTape` port
+# (see `multimodal_ad.models.gradcam`), and no new tracking framework
+# replaces the notebooks' DagsHub/MLflow wiring (see AGENTS.md).
+model = [
+    "tensorflow>=2.20.0",
+]
+# Plotting-only dependencies for notebook-adjacent visualization, not
+# imported by any `multimodal_ad` runtime code.
 science = [
     "matplotlib>=3.10.0",
     "pillow>=11.1.0",
-    "tensorflow>=2.20.0",
-    "tf-keras-vis>=0.8.7",
 ]
 
 [dependency-groups]
