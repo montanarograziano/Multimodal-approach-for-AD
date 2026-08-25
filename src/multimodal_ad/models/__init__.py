@@ -2,9 +2,10 @@
 
 Ports the scientifically meaningful behavior of `Training.ipynb` and
 `Heatmaps.ipynb` (see `docs/legacy-notebooks-inventory.md`) into current,
-typed Python. **Imports TensorFlow unconditionally**; install the `model`
-extra (`uv sync --extra model`) to use this subpackage. `multimodal_ad.data`
-and the CLI do not depend on it. Modules:
+typed Python. **Imports TensorFlow unconditionally**; run `just install`
+(installs the `model` extra along with everything else) to use this
+subpackage, or `uv sync --extra model` for a lighter, model-only install.
+`multimodal_ad.data` and the CLI do not depend on it. Modules:
 
 - `architecture`: the 3D CNN builder (`build_3d_cnn`) and its frozen/named
   fusion-branch/fusion-head variants, parameterizing the four near-identical

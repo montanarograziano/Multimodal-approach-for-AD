@@ -134,8 +134,8 @@ Colab, no manual paths:
   build a reduced-filter 3D model, one bounded train/evaluate/save-reload
   flow, correct metrics (needs the `model` extra).
 - [`03-explainability.ipynb`](notebooks/03-explainability.ipynb): native
-  Grad-CAM and AAL2 region ranking on synthetic/toy arrays (needs the
-  `model` extra).
+  Grad-CAM on a synthetic array plus AAL2 region ranking against the
+  bundled real AAL2 atlas (needs the `model` extra).
 
 ```bash
 just install
