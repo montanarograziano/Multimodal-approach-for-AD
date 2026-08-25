@@ -1,28 +1,108 @@
 [project]
-name = "multimodal-approach-for-ad"
+name = "multimodal-ad"
 version = "0.1.0"
-description = "Code for 'Automated Detection of Alzheimer’s Disease: A Multi-modal Approach With 3D MRI and Amyloid PET' paper"
+description = "Code for 'Automated Detection of Alzheimer's Disease: A Multi-modal Approach With 3D MRI and Amyloid PET' paper"
 readme = "README.md"
-requires-python = ">=3.11"
+license = "MIT"
+requires-python = ">=3.13"
+# Unconditionally imported by src/multimodal_ad/data/*; must be runtime deps
+# (see AGENTS.md). TensorFlow/tf-keras-vis stay model-specific/optional since
+# no scientific code imports them yet.
 dependencies = [
-    "matplotlib>=3.10.0",
     "nibabel>=5.3.2",
     "numpy>=2.2.1",
     "opencv-python>=4.11.0.86",
-    "p-tqdm>=1.4.2",
-    "pandas>=2.2.3",
-    "pillow>=11.1.0",
+    "polars>=1.35.0",
+    "scikit-learn>=1.6.1",
     "scipy>=1.15.1",
-    "tensorflow>=2.14.0",
-    "tf-keras-vis>=0.8.7",
+]
+
+[project.optional-dependencies]
+# Model/training/evaluation/Grad-CAM code (`multimodal_ad.models`) imports
+# TensorFlow unconditionally; kept optional so `multimodal_ad.data` and the
+# CLI install/run without pulling in TensorFlow. `tf-keras-vis`/`mlflow`
+# (used by the legacy notebooks for Grad-CAM and experiment tracking) are
+# intentionally dropped: Grad-CAM is now a native `tf.GradientTape` port
+# (see `multimodal_ad.models.gradcam`), and no new tracking framework
+# replaces the notebooks' DagsHub/MLflow wiring (see AGENTS.md).
+model = [
+    "tensorflow>=2.20.0",
+]
+# Plotting-only dependencies for notebook-adjacent visualization, not
+# imported by any `multimodal_ad` runtime code. `nilearn` pulls in pandas
+# transitively; that's fine here, it just must not become a project.py
+# runtime import (see AGENTS.md).
+science = [
+    "matplotlib>=3.10.0",
+    "nilearn>=0.11.1",
+    "pillow>=11.1.0",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=6.29.5",
-    "mypy>=1.14.1",
-    "notebook>=7.3.2",
+    "prek>=0.2.9",
+    "pyrefly>=0.13.1",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "ruff>=0.9.2",
 ]
+notebooks = [
+    "ipykernel>=6.29.5",
+    "notebook>=7.3.2",
+    # Only used by the notebooks under `notebooks/` to display slices/plots;
+    # not a `multimodal_ad` runtime dependency (see `science` extra above,
+    # which is a separate installable-extra path for the same packages).
+    # `nilearn` pulls in pandas transitively, used only by
+    # `04-paper-figures.ipynb`.
+    "matplotlib>=3.10.0",
+    "nilearn>=0.11.1",
+]
+docs = [
+    "zensical>=0.0.57",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+# Strict allowlist: only what's needed to build/install the package.
+# Non-package historical research assets (root mri1.nii/*.npy, samples/,
+# notebooks/, the docs site, tests/, CI/agent config) are intentionally
+# excluded; Hatch's default sdist otherwise includes every VCS-tracked file.
+only-include = [
+    "src/multimodal_ad",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "CITATION.cff",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/multimodal_ad"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+# Legacy research notebooks are out of scope for lint/format (see
+# docs/legacy-notebooks-inventory.md); they are preserved as-is until ported.
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "N"]
+
+[tool.pyrefly]
+# Default scope excludes `multimodal_ad.models`/`tests/models`: they import
+# TensorFlow/Keras unconditionally, which isn't installed in the fast
+# `check` CI job (see AGENTS.md, `just typecheck` vs `just typecheck-model`).
+project-includes = ["src", "tests"]
+project-excludes = ["src/multimodal_ad/models/**", "tests/models/**"]
+search-path = ["src"]
+python-version = "3.13"
+
+[tool.pytest.ini_options]
+addopts = "--cov=multimodal_ad --cov-report=term-missing"
+testpaths = ["tests"]
