@@ -71,8 +71,10 @@ Grad-CAM to relate model attention to known AD-affected brain regions.
    with MLflow/DagsHub's interactive tracking dropped rather than
    replaced (see [Methodology](methodology.md)).
 4. **Phase 3 (done)** — thin notebooks under `notebooks/` that call into
-   the `multimodal_ad` API on synthetic data; the five legacy notebooks
-   (plus `images/3D Brain Plot.ipynb`) moved byte-for-byte to
+   the `multimodal_ad` API on synthetic data, plus a fourth notebook
+   (`04-paper-figures.ipynb`) reproducing the legacy glass-brain figures
+   on real, committed root assets; the five legacy notebooks (plus
+   `images/3D Brain Plot.ipynb`) moved byte-for-byte to
    `notebooks/legacy/`. Real-OASIS-3 validation/metric reproduction
    remains future work, pending resolution of the open ambiguities in the
    [legacy notebook inventory](legacy-notebooks-inventory.md#summary-what-must-be-resolved-before-phase-2-scientific-code-porting)

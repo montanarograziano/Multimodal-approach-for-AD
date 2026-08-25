@@ -87,8 +87,9 @@ just docs-build   # strict build (warnings fail the build) into ./site
 
 `notebooks/*.ipynb` are thin, newcomer-oriented notebooks that import and
 call the stable `multimodal_ad` API on deterministic synthetic data (data
-pipeline, tiny CPU model workflow, explainability); all reusable logic
-lives in `src/`. `notebooks/legacy/*.ipynb` are the original five Colab
+pipeline, tiny CPU model workflow, explainability) or real, committed root
+assets (`04-paper-figures.ipynb`, the legacy glass-brain figures); all
+reusable logic lives in `src/`. `notebooks/legacy/*.ipynb` are the original five Colab
 notebooks plus `images/3D Brain Plot.ipynb`, preserved byte-for-byte (see
 the [legacy notebook inventory](legacy-notebooks-inventory.md)) and not
 executable outside their original Colab/Drive environment.

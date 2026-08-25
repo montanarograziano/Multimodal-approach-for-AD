@@ -51,9 +51,11 @@ All commands are defined in the [`Justfile`](https://github.com/montanarograzian
 
 `notebooks/*.ipynb` (not `notebooks/legacy/`) are small, newcomer-oriented
 notebooks that call into the `multimodal_ad` API on deterministic synthetic
-data: no OASIS-3 access, no manual paths, no Colab. `01-data-quickstart.ipynb`
-needs only the base install; `02-tiny-model-workflow.ipynb` and
-`03-explainability.ipynb` need the `model` extra too. All three need the
+data (plus real, committed root assets for `04-paper-figures.ipynb`): no
+OASIS-3 access, no manual paths, no Colab. `01-data-quickstart.ipynb` needs
+only the base install; `02-tiny-model-workflow.ipynb` and
+`03-explainability.ipynb` need the `model` extra too;
+`04-paper-figures.ipynb` needs only the base install. All four need the
 `notebooks` group, installed by `just install`:
 
 ```bash

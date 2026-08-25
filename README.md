@@ -60,6 +60,7 @@ AD-affected brain regions.
 │   ├── 01-data-quickstart.ipynb      # thin: data pipeline on synthetic data
 │   ├── 02-tiny-model-workflow.ipynb  # thin: build/train/evaluate/save-reload
 │   ├── 03-explainability.ipynb       # thin: Grad-CAM + AAL2 region ranking
+│   ├── 04-paper-figures.ipynb        # thin: legacy glass-brain figures on real assets
 │   └── legacy/                       # original Colab notebooks, preserved byte-for-byte
 ├── docs/                  # documentation site source (Markdown) + notebook inventory
 ├── zensical.toml          # documentation site config
@@ -139,6 +140,15 @@ Colab, no manual paths:
   bundled real AAL2 atlas, with input/Grad-CAM/overlay slices, a real-atlas
   slice, a synthetic-heatmap-over-atlas overlay, and a top-regions bar
   chart (needs the `model` extra).
+- [`04-paper-figures.ipynb`](notebooks/04-paper-figures.ipynb): the legacy
+  `3D Brain Plot.ipynb` glass-brain figures reproduced on the real,
+  committed root assets (`mri1.nii`, the derived cohort Grad-CAM `.npy`
+  files), with native/processed MRI reference slices, positive-vs-negative
+  Grad-CAM comparison, cohort-mean overlays, NumPy/Matplotlib
+  glass-brain-style MIP panels (no Nilearn), and the static sample PNGs;
+  every figure caption distinguishes real reference, derived heatmap, and
+  static-sample imagery, and the overlays are explicitly illustrative, not
+  a validated registration.
 
 ```bash
 just install
