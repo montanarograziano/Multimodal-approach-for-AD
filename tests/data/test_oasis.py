@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from multimodal_ad.data.oasis import (
@@ -68,15 +68,15 @@ def test_load_clinical_table_reads_local_csv(tmp_path: Path) -> None:
     layout = _make_layout(tmp_path)
     (tmp_path / layout.clinical_csv).write_text("subject_id,day_offset\nOAS1,0\n")
     df = load_clinical_table(layout)
-    assert list(df["subject_id"]) == ["OAS1"]
+    assert df.get_column("subject_id").to_list() == ["OAS1"]
 
 
 def test_load_scan_index_reads_local_csv(tmp_path: Path) -> None:
     layout = _make_layout(tmp_path)
     (tmp_path / layout.mri_csv).write_text("session_id\nOAS1_MR_d0001\n")
     df = load_scan_index(layout, layout.mri_csv)
-    assert isinstance(df, pd.DataFrame)
-    assert df["session_id"].iloc[0] == "OAS1_MR_d0001"
+    assert isinstance(df, pl.DataFrame)
+    assert df.get_column("session_id")[0] == "OAS1_MR_d0001"
 
 
 def test_load_clinical_table_never_downloads_missing_data(tmp_path: Path) -> None:

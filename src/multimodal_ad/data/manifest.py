@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 
 
 class Modality(StrEnum):
@@ -77,7 +77,7 @@ class ScanManifest:
         return iter(self.records)
 
     @classmethod
-    def from_dataframe(cls, df: pd.DataFrame, *, require_files_exist: bool = True) -> ScanManifest:
+    def from_dataframe(cls, df: pl.DataFrame, *, require_files_exist: bool = True) -> ScanManifest:
         """Build and validate a manifest from a DataFrame matching the data contract.
 
         Raises `ManifestValidationError` on missing columns, duplicate
@@ -93,7 +93,7 @@ class ScanManifest:
         records: list[ScanRecord] = []
         seen_sessions: set[str] = set()
         has_tracer = "tracer" in df.columns
-        for row_dict in df.to_dict(orient="records"):
+        for row_dict in df.iter_rows(named=True):
             session_id = str(row_dict["session_id"])
             if session_id in seen_sessions:
                 raise ManifestValidationError(f"duplicate session_id in manifest: {session_id!r}")
@@ -117,14 +117,14 @@ class ScanManifest:
 
             label_raw = row_dict["label"]
             try:
-                label = None if pd.isna(label_raw) else int(label_raw)
+                label = None if label_raw is None else int(label_raw)
             except (TypeError, ValueError) as exc:
                 raise ManifestValidationError(
                     f"{session_id}: label must be numeric or missing, got {label_raw!r}"
                 ) from exc
 
             day_offset_raw = row_dict["day_offset"]
-            if pd.isna(day_offset_raw):
+            if day_offset_raw is None:
                 raise ManifestValidationError(f"{session_id}: day_offset must not be missing")
             try:
                 day_offset = int(day_offset_raw)
@@ -134,7 +134,7 @@ class ScanManifest:
                 ) from exc
 
             tracer_raw = row_dict.get("tracer") if has_tracer else None
-            tracer = None if tracer_raw is None or pd.isna(tracer_raw) else str(tracer_raw)
+            tracer = None if tracer_raw is None else str(tracer_raw)
 
             records.append(
                 ScanRecord(
@@ -149,8 +149,8 @@ class ScanManifest:
             )
         return cls(records)
 
-    def to_dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame(
+    def to_dataframe(self) -> pl.DataFrame:
+        return pl.DataFrame(
             {
                 "subject_id": [r.subject_id for r in self.records],
                 "session_id": [r.session_id for r in self.records],
@@ -164,10 +164,10 @@ class ScanManifest:
 
     @classmethod
     def from_csv(cls, path: Path, *, require_files_exist: bool = True) -> ScanManifest:
-        return cls.from_dataframe(pd.read_csv(path), require_files_exist=require_files_exist)
+        return cls.from_dataframe(pl.read_csv(path), require_files_exist=require_files_exist)
 
     def to_csv(self, path: Path) -> None:
-        self.to_dataframe().to_csv(path, index=False)
+        self.to_dataframe().write_csv(path)
 
     def filter_modality(self, modality: Modality) -> ScanManifest:
         return ScanManifest([r for r in self.records if r.modality is modality])

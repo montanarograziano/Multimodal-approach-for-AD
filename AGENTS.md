@@ -79,8 +79,10 @@ subtree; CI's `model-smoke` job does this automatically after installing the
 ## Conventions
 
 - `[project.dependencies]` holds packages `multimodal_ad` unconditionally
-  imports at runtime (currently: nibabel, numpy, opencv-python, pandas,
-  scikit-learn, scipy, all used by `multimodal_ad.data`).
+  imports at runtime (currently: nibabel, numpy, opencv-python, polars,
+  scikit-learn, scipy, all used by `multimodal_ad.data`). Tabular data
+  (manifests, clinical tables, splits, region-ranking results) uses Polars,
+  not pandas; pandas is not a dependency of this project.
   `[project.optional-dependencies].science` holds packages only needed by
   code not yet ported or only used for specific features (TensorFlow/Keras,
   tf-keras-vis, matplotlib, pillow). When a module starts unconditionally

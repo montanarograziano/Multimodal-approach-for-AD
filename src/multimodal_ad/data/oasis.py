@@ -30,7 +30,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 
 _SESSION_ID_PATTERN = re.compile(
     r"^(?P<subject_id>[A-Za-z0-9]+)_(?P<modality_tag>[A-Za-z0-9]+)_d(?P<day_offset>\d+)$"
@@ -119,20 +119,20 @@ def validate_layout(layout: OasisLayout) -> None:
         )
 
 
-def load_clinical_table(layout: OasisLayout) -> pd.DataFrame:
+def load_clinical_table(layout: OasisLayout) -> pl.DataFrame:
     """Read the locally provided clinical-visits CSV.
 
     Expected (minimum) columns: `subject_id`, `day_offset`, and a diagnosis
     column suitable for `data.labeling.classify_diagnosis_row`.
     """
     validate_layout(layout)
-    return pd.read_csv(layout.path(layout.clinical_csv))
+    return pl.read_csv(layout.path(layout.clinical_csv))
 
 
-def load_scan_index(layout: OasisLayout, csv_name: str) -> pd.DataFrame:
+def load_scan_index(layout: OasisLayout, csv_name: str) -> pl.DataFrame:
     """Read a locally provided per-modality scan index CSV (`mri.csv`/`pet.csv`).
 
     Expected (minimum) column: `session_id`, parseable by `parse_session_id`.
     """
     validate_layout(layout)
-    return pd.read_csv(layout.path(csv_name))
+    return pl.read_csv(layout.path(csv_name))

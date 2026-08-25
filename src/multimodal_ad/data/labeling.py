@@ -31,10 +31,10 @@ if the OASIS-3 codebook clarifies its intent, this regex should be updated.
 
 from __future__ import annotations
 
+import math
 import re
-from typing import cast
 
-import pandas as pd
+import polars as pl
 
 # Case-insensitive; matches the legacy regex minus the garbled fragment
 # `other mental retarAD demion` (unrecoverable, see module docstring).
@@ -55,13 +55,13 @@ def classify_diagnosis(diagnosis: str | float | None) -> bool:
     Returns `True` for demented/uncertain-demented diagnoses, `False`
     otherwise (including missing/NaN values).
     """
-    if diagnosis is None or (isinstance(diagnosis, float) and pd.isna(diagnosis)):
+    if diagnosis is None or (isinstance(diagnosis, float) and math.isnan(diagnosis)):
         return False
     text = str(diagnosis)
     return bool(_DEMENTED_PATTERN.match(text) or _UNCERTAIN_PATTERN.match(text))
 
 
-def classify_diagnosis_row(dx_values: pd.Series | list[str | float | None]) -> bool:
+def classify_diagnosis_row(dx_values: pl.Series | list[str | float | None]) -> bool:
     """Classify a row with multiple differential-diagnosis columns (dx1..dxN).
 
     A row is demented if *any* of its diagnosis fields classify as demented.
@@ -70,35 +70,30 @@ def classify_diagnosis_row(dx_values: pd.Series | list[str | float | None]) -> b
 
 
 def smooth_temporal_labels(
-    labels: pd.Series,
-    subject_ids: pd.Series,
-    day_offsets: pd.Series,
+    labels: pl.Series,
+    subject_ids: pl.Series,
+    day_offsets: pl.Series,
     *,
     window: int = TEMPORAL_SMOOTHING_WINDOW,
-) -> pd.Series:
+) -> pl.Series:
     """Correct isolated non-demented readings surrounded by demented visits.
 
-    `labels`, `subject_ids`, and `day_offsets` must be aligned (same index,
-    same length). Rows are ordered by `day_offset` within each subject
-    before smoothing, and the result is returned reindexed to match the
-    input's original index/order.
+    `labels`, `subject_ids`, and `day_offsets` must be aligned (same length,
+    same position order). Rows are ordered by `day_offset` within each
+    subject before smoothing, and the result is returned reordered to match
+    the input's original position order.
     """
     if not (len(labels) == len(subject_ids) == len(day_offsets)):
         raise ValueError("labels, subject_ids, and day_offsets must have the same length")
 
-    frame = pd.DataFrame(
-        {
-            "label": labels.to_numpy(),
-            "subject_id": subject_ids.to_numpy(),
-            "day": day_offsets.to_numpy(),
-        },
-        index=labels.index,
-    )
-    smoothed = frame["label"].copy()
+    frame = pl.DataFrame(
+        {"label": labels, "subject_id": subject_ids, "day": day_offsets}
+    ).with_row_index("__row")
 
-    for _subject, group in frame.groupby("subject_id", sort=False):
-        ordered = group.sort_values("day")
-        values = ordered["label"].tolist()
+    corrected_groups: list[pl.DataFrame] = []
+    for _subject, group in frame.group_by("subject_id", maintain_order=True):
+        ordered = group.sort("day")
+        values = ordered.get_column("label").to_list()
         corrected = list(values)
         for i, value in enumerate(values):
             if value:
@@ -107,45 +102,49 @@ def smooth_temporal_labels(
             has_next_true = any(values[i + 1 : i + 1 + window])
             if has_prior_true and has_next_true:
                 corrected[i] = True
-        smoothed.loc[ordered.index] = corrected
+        corrected_groups.append(
+            ordered.with_columns(pl.Series("label", corrected)).select("__row", "label")
+        )
 
-    # `.reindex` is typed as returning `Series | DataFrame` (pandas' generic
-    # overloads); called on a `Series` it always returns a `Series`.
-    return cast(pd.Series, smoothed.reindex(labels.index))
+    result = pl.concat(corrected_groups).sort("__row")
+    return result.get_column("label").rename(labels.name)
 
 
 def label_nearest_visit(
-    scan_subject_ids: pd.Series,
-    scan_day_offsets: pd.Series,
-    clinical: pd.DataFrame,
+    scan_subject_ids: pl.Series,
+    scan_day_offsets: pl.Series,
+    clinical: pl.DataFrame,
     *,
     clinical_subject_col: str = "subject_id",
     clinical_day_col: str = "day_offset",
     clinical_label_col: str = "label",
-) -> pd.Series:
+) -> pl.Series:
     """Assign each scan the label of its nearest-in-time clinical visit.
 
     For each scan, finds the clinical visit for the same subject minimizing
     `abs(day_offset - visit_day)` and returns that visit's label. Ties are
-    broken by the first matching row in `clinical`'s given order (documented
-    here; the legacy notebook relied on undocumented pandas sort stability).
-    Scans for a subject with no clinical visits get `pd.NA`.
+    broken by the first matching row in `clinical`'s given order (`arg_min`
+    over the per-subject group, which preserves that order; the legacy
+    notebook relied on undocumented pandas sort stability for the same
+    tie-break). Scans for a subject with no clinical visits get `None`.
     """
     if len(scan_subject_ids) != len(scan_day_offsets):
         raise ValueError("scan_subject_ids and scan_day_offsets must have the same length")
 
     grouped_clinical = {
-        subject: group for subject, group in clinical.groupby(clinical_subject_col, sort=False)
+        subject: group
+        for (subject,), group in clinical.group_by(clinical_subject_col, maintain_order=True)
     }
 
     results: list[object] = []
     for subject, day in zip(scan_subject_ids, scan_day_offsets, strict=True):
         visits = grouped_clinical.get(subject)
-        if visits is None or visits.empty:
-            results.append(pd.NA)
+        if visits is None or visits.is_empty():
+            results.append(None)
             continue
-        deltas = (visits[clinical_day_col] - day).abs()
-        nearest_index = deltas.idxmin()
-        results.append(visits.loc[nearest_index, clinical_label_col])
+        deltas = (visits.get_column(clinical_day_col) - day).abs()
+        nearest_pos = deltas.arg_min()
+        assert nearest_pos is not None
+        results.append(visits.get_column(clinical_label_col)[nearest_pos])
 
-    return pd.Series(results, index=scan_subject_ids.index)
+    return pl.Series(scan_subject_ids.name, results)

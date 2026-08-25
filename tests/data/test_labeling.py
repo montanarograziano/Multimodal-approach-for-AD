@@ -1,6 +1,6 @@
 """Tests for `multimodal_ad.data.labeling`."""
 
-import pandas as pd
+import polars as pl
 
 from multimodal_ad.data.labeling import (
     classify_diagnosis,
@@ -37,75 +37,75 @@ def test_classify_diagnosis_row_any_column_matches() -> None:
 
 def test_smooth_temporal_labels_corrects_isolated_dip() -> None:
     # Subject A: True, False, True (isolated dip surrounded by True on both sides).
-    labels = pd.Series([True, False, True])
-    subjects = pd.Series(["A", "A", "A"])
-    days = pd.Series([0, 30, 60])
+    labels = pl.Series([True, False, True])
+    subjects = pl.Series(["A", "A", "A"])
+    days = pl.Series([0, 30, 60])
 
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [True, True, True]
+    assert smoothed.to_list() == [True, True, True]
 
 
 def test_smooth_temporal_labels_leaves_unsurrounded_false() -> None:
     # False at the start has no preceding True: must not be corrected
     # (documented, deliberate edge-case resolution; see module docstring).
-    labels = pd.Series([False, True, True])
-    subjects = pd.Series(["A", "A", "A"])
-    days = pd.Series([0, 30, 60])
+    labels = pl.Series([False, True, True])
+    subjects = pl.Series(["A", "A", "A"])
+    days = pl.Series([0, 30, 60])
 
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [False, True, True]
+    assert smoothed.to_list() == [False, True, True]
 
 
 def test_smooth_temporal_labels_respects_window_size() -> None:
     # Three consecutive False values exceed the 2-visit window: only the
     # ones within range of a True on both sides are corrected.
-    labels = pd.Series([True, False, False, False, True])
-    subjects = pd.Series(["A"] * 5)
-    days = pd.Series([0, 10, 20, 30, 40])
+    labels = pl.Series([True, False, False, False, True])
+    subjects = pl.Series(["A"] * 5)
+    days = pl.Series([0, 10, 20, 30, 40])
 
     smoothed = smooth_temporal_labels(labels, subjects, days)
     # Only index 2 has a True within 2 steps on *both* sides (index 0 back,
     # index 4 forward); indices 1 and 3 each miss a True on one side.
-    assert smoothed.tolist() == [True, False, True, False, True]
+    assert smoothed.to_list() == [True, False, True, False, True]
 
 
 def test_smooth_temporal_labels_is_per_subject() -> None:
-    labels = pd.Series([True, False, True, False, False, False])
-    subjects = pd.Series(["A", "A", "A", "B", "B", "B"])
-    days = pd.Series([0, 10, 20, 0, 10, 20])
+    labels = pl.Series([True, False, True, False, False, False])
+    subjects = pl.Series(["A", "A", "A", "B", "B", "B"])
+    days = pl.Series([0, 10, 20, 0, 10, 20])
 
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [True, True, True, False, False, False]
+    assert smoothed.to_list() == [True, True, True, False, False, False]
 
 
 def test_smooth_temporal_labels_out_of_order_input_is_sorted_by_day() -> None:
-    labels = pd.Series([True, True, False])
-    subjects = pd.Series(["A", "A", "A"])
-    days = pd.Series([20, 0, 10])  # unordered: day-order is True(0), False(10), True(20)
+    labels = pl.Series([True, True, False])
+    subjects = pl.Series(["A", "A", "A"])
+    days = pl.Series([20, 0, 10])  # unordered: day-order is True(0), False(10), True(20)
 
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [True, True, True]
+    assert smoothed.to_list() == [True, True, True]
 
 
 def test_label_nearest_visit_picks_closest_day() -> None:
-    clinical = pd.DataFrame(
+    clinical = pl.DataFrame(
         {
             "subject_id": ["A", "A", "A"],
             "day_offset": [0, 50, 100],
             "label": [0, 1, 0],
         }
     )
-    scan_subjects = pd.Series(["A", "A"])
-    scan_days = pd.Series([45, 99])
+    scan_subjects = pl.Series(["A", "A"])
+    scan_days = pl.Series([45, 99])
 
     labels = label_nearest_visit(scan_subjects, scan_days, clinical)
-    assert labels.tolist() == [1, 0]
+    assert labels.to_list() == [1, 0]
 
 
 def test_label_nearest_visit_missing_subject_is_na() -> None:
-    clinical = pd.DataFrame({"subject_id": ["A"], "day_offset": [0], "label": [1]})
-    scan_subjects = pd.Series(["B"])
-    scan_days = pd.Series([0])
+    clinical = pl.DataFrame({"subject_id": ["A"], "day_offset": [0], "label": [1]})
+    scan_subjects = pl.Series(["B"])
+    scan_days = pl.Series([0])
 
     labels = label_nearest_visit(scan_subjects, scan_days, clinical)
-    assert pd.isna(labels.iloc[0])
+    assert labels[0] is None

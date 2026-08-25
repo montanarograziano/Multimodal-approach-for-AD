@@ -18,7 +18,7 @@ just install
 
 `just install` (`uv sync --locked --all-groups --all-extras`) installs
 every dependency group and optional extra against the locked versions in
-`uv.lock`: runtime deps (nibabel, numpy, opencv-python, pandas,
+`uv.lock`: runtime deps (nibabel, numpy, opencv-python, polars,
 scikit-learn, scipy — everything `multimodal_ad.data` and the CLI import
 unconditionally), the `dev` group (ruff, pyrefly, pytest, prek), the
 `model` extra (TensorFlow, for `multimodal_ad.models`), the `science`

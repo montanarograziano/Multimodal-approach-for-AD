@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from multimodal_ad.data.manifest import (
@@ -36,7 +36,7 @@ def scan_file(tmp_path: Path) -> Path:
 
 
 def test_round_trip_dataframe(scan_file: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file)])
+    df = pl.DataFrame([_valid_row(scan_file)])
     manifest = ScanManifest.from_dataframe(df)
     assert len(manifest) == 1
     record = manifest.records[0]
@@ -49,37 +49,37 @@ def test_round_trip_dataframe(scan_file: Path) -> None:
 
 
 def test_missing_required_column_raises(scan_file: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file)]).drop(columns=["label"])
+    df = pl.DataFrame([_valid_row(scan_file)]).drop("label")
     with pytest.raises(ManifestValidationError, match="missing required columns"):
         ScanManifest.from_dataframe(df)
 
 
 def test_duplicate_session_id_raises(scan_file: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file), _valid_row(scan_file)])
+    df = pl.DataFrame([_valid_row(scan_file), _valid_row(scan_file)])
     with pytest.raises(ManifestValidationError, match="duplicate session_id"):
         ScanManifest.from_dataframe(df)
 
 
 def test_unknown_modality_raises(scan_file: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file, modality="XRAY")])
+    df = pl.DataFrame([_valid_row(scan_file, modality="XRAY")])
     with pytest.raises(ManifestValidationError, match="invalid modality"):
         ScanManifest.from_dataframe(df)
 
 
 def test_missing_file_raises_by_default(tmp_path: Path) -> None:
-    df = pd.DataFrame([_valid_row(tmp_path / "does-not-exist.nii.gz")])
+    df = pl.DataFrame([_valid_row(tmp_path / "does-not-exist.nii.gz")])
     with pytest.raises(ManifestValidationError, match="does not exist"):
         ScanManifest.from_dataframe(df)
 
 
 def test_missing_file_allowed_when_not_required(tmp_path: Path) -> None:
-    df = pd.DataFrame([_valid_row(tmp_path / "does-not-exist.nii.gz")])
+    df = pl.DataFrame([_valid_row(tmp_path / "does-not-exist.nii.gz")])
     manifest = ScanManifest.from_dataframe(df, require_files_exist=False)
     assert len(manifest) == 1
 
 
 def test_invalid_label_raises(scan_file: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file, label="not-a-label")])
+    df = pl.DataFrame([_valid_row(scan_file, label="not-a-label")])
     with pytest.raises(ManifestValidationError, match="label"):
         ScanManifest.from_dataframe(df)
 
@@ -97,7 +97,7 @@ def test_scan_record_rejects_out_of_range_label(scan_file: Path) -> None:
 
 
 def test_filter_modality(scan_file: Path) -> None:
-    df = pd.DataFrame(
+    df = pl.DataFrame(
         [
             _valid_row(scan_file, session_id="s-mri", modality="MRI"),
             _valid_row(scan_file, session_id="s-pet", modality="PET"),
@@ -110,7 +110,7 @@ def test_filter_modality(scan_file: Path) -> None:
 
 
 def test_csv_round_trip(scan_file: Path, tmp_path: Path) -> None:
-    df = pd.DataFrame([_valid_row(scan_file)])
+    df = pl.DataFrame([_valid_row(scan_file)])
     manifest = ScanManifest.from_dataframe(df)
     csv_path = tmp_path / "manifest.csv"
     manifest.to_csv(csv_path)

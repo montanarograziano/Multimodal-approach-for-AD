@@ -12,7 +12,7 @@ dependencies = [
     "nibabel>=5.3.2",
     "numpy>=2.2.1",
     "opencv-python>=4.11.0.86",
-    "pandas>=2.2.3",
+    "polars>=1.35.0",
     "scikit-learn>=1.6.1",
     "scipy>=1.15.1",
 ]

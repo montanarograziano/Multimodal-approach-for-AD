@@ -18,7 +18,7 @@ from pathlib import Path
 
 import nibabel as nib
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from multimodal_ad.data.manifest import Modality, ScanManifest, ScanRecord
 
@@ -111,6 +111,6 @@ def generate_synthetic_dataset(
     return manifest
 
 
-def load_synthetic_manifest(output_dir: Path) -> pd.DataFrame:
+def load_synthetic_manifest(output_dir: Path) -> pl.DataFrame:
     """Read back a manifest CSV previously written by `generate_synthetic_dataset`."""
-    return pd.read_csv(output_dir / "manifest.csv")
+    return pl.read_csv(output_dir / "manifest.csv")

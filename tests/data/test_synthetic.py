@@ -43,8 +43,8 @@ def test_generate_synthetic_dataset_is_deterministic(tmp_path: Path) -> None:
     manifest_a = generate_synthetic_dataset(out_a, config)
     manifest_b = generate_synthetic_dataset(out_b, config)
 
-    df_a = manifest_a.to_dataframe().drop(columns=["file_path"])
-    df_b = manifest_b.to_dataframe().drop(columns=["file_path"])
+    df_a = manifest_a.to_dataframe().drop("file_path")
+    df_b = manifest_b.to_dataframe().drop("file_path")
     assert df_a.equals(df_b)
 
     volume_a = load_volume(manifest_a.records[0].file_path)

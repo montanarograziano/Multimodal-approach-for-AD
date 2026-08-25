@@ -1,7 +1,7 @@
 """Tests for `multimodal_ad.models.regions` (no TensorFlow needed)."""
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from multimodal_ad.models.regions import (
@@ -38,13 +38,12 @@ def test_rank_regions_computes_masked_mean_count_sum() -> None:
     heatmap[0, 0, 0] = 0.5
     heatmap[1, 1, 1] = 0.8
 
-    labels = pd.DataFrame({"intensity": [10.0, 20.0]}, index=["region_a", "region_b"])
-    labels.index.name = "name"
+    labels = pl.DataFrame({"name": ["region_a", "region_b"], "intensity": [10.0, 20.0]})
 
     results = rank_regions(atlas, labels, {"pos": heatmap})
 
-    row_a = results[results["part"] == "region_a"].iloc[0]
-    row_b = results[results["part"] == "region_b"].iloc[0]
+    row_a = results.filter(pl.col("part") == "region_a").row(0, named=True)
+    row_b = results.filter(pl.col("part") == "region_b").row(0, named=True)
     # Single-voxel regions: frame mean and region mean coincide (sum / 64 vs
     # sum / 1 differ; see the multi-voxel test below for where they diverge).
     assert row_a["pos mean"] == pytest.approx(0.5 / 64)
@@ -58,15 +57,16 @@ def test_rank_regions_computes_masked_mean_count_sum() -> None:
 def test_rank_regions_returns_nan_region_mean_for_absent_region() -> None:
     atlas = np.zeros((3, 3, 3), dtype=np.float64)  # no voxel has intensity 99
     heatmap = np.ones((3, 3, 3), dtype=np.float64)
-    labels = pd.DataFrame({"intensity": [99.0]}, index=["missing_region"])
+    labels = pl.DataFrame({"name": ["missing_region"], "intensity": [99.0]})
 
     results = rank_regions(atlas, labels, {"neg": heatmap})
+    row = results.row(0, named=True)
     # `mean` (frame-denominator formula) degrades gracefully to 0.0 for an
     # absent region (sum 0 / fixed frame count); `region mean` has no
     # region voxels to divide by, so it is `nan` rather than a fabricated 0.
-    assert results.iloc[0]["neg mean"] == pytest.approx(0.0)
-    assert np.isnan(results.iloc[0]["neg region mean"])
-    assert results.iloc[0]["neg count"] == 0
+    assert row["neg mean"] == pytest.approx(0.0)
+    assert np.isnan(row["neg region mean"])
+    assert row["neg count"] == 0
 
 
 def test_rank_regions_mean_and_region_mean_diverge_for_different_sized_regions() -> None:
@@ -83,12 +83,11 @@ def test_rank_regions_mean_and_region_mean_diverge_for_different_sized_regions()
     heatmap[0, 0, 0] = 1.0  # region_small: sum 1.0
     heatmap[0:2, 0:2, 1] = 1.0  # region_big: sum 4.0, same per-voxel value
 
-    labels = pd.DataFrame({"intensity": [10.0, 20.0]}, index=["region_small", "region_big"])
-    labels.index.name = "name"
+    labels = pl.DataFrame({"name": ["region_small", "region_big"], "intensity": [10.0, 20.0]})
 
     results = rank_regions(atlas, labels, {"pos": heatmap})
-    small = results[results["part"] == "region_small"].iloc[0]
-    big = results[results["part"] == "region_big"].iloc[0]
+    small = results.filter(pl.col("part") == "region_small").row(0, named=True)
+    big = results.filter(pl.col("part") == "region_big").row(0, named=True)
 
     # Legacy `mean`: sum / 100 voxels regardless of region size, so the
     # 4-voxel region's frame mean is 4x the 1-voxel region's, purely from

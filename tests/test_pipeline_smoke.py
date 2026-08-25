@@ -10,7 +10,7 @@ after splitting.
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from multimodal_ad.data.augmentation import augment_volume
@@ -61,7 +61,7 @@ def test_full_pipeline_split_has_no_subject_overlap(synthetic_manifest: ScanMani
     df = synthetic_manifest.to_dataframe()
     train_df, test_df = subject_train_test_split(df, test_size=0.3, seed=1234)
     assert_no_subject_leakage(train_df, test_df)  # must not raise
-    assert set(train_df["subject_id"]) & set(test_df["subject_id"]) == set()
+    assert set(train_df.get_column("subject_id")) & set(test_df.get_column("subject_id")) == set()
 
 
 def test_augmentation_applied_only_after_split_does_not_leak_subjects(
@@ -94,32 +94,32 @@ def test_augmentation_applied_only_after_split_does_not_leak_subjects(
 
     # Every augmented sample's subject must have come from the train split,
     # never the test split.
-    assert augmented_subjects <= set(train_df["subject_id"])
-    assert augmented_subjects.isdisjoint(set(test_df["subject_id"]))
+    assert augmented_subjects <= set(train_df.get_column("subject_id"))
+    assert augmented_subjects.isdisjoint(set(test_df.get_column("subject_id")))
 
 
 def test_malformed_manifest_is_rejected(tmp_path: Path) -> None:
     bad_csv = tmp_path / "manifest.csv"
-    pd.DataFrame({"subject_id": ["A"], "session_id": ["A_MR_d1"]}).to_csv(bad_csv, index=False)
+    pl.DataFrame({"subject_id": ["A"], "session_id": ["A_MR_d1"]}).write_csv(bad_csv)
     with pytest.raises(ManifestValidationError):
         ScanManifest.from_csv(bad_csv)
 
 
 def test_temporal_smoothing_edge_case_single_visit_subject() -> None:
     """A subject with exactly one visit can never be "surrounded"; must stay as-is."""
-    labels = pd.Series([False])
-    subjects = pd.Series(["ONLY"])
-    days = pd.Series([0])
+    labels = pl.Series([False])
+    subjects = pl.Series(["ONLY"])
+    days = pl.Series([0])
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [False]
+    assert smoothed.to_list() == [False]
 
 
 def test_temporal_smoothing_edge_case_all_false_never_corrected() -> None:
-    labels = pd.Series([False, False, False])
-    subjects = pd.Series(["A", "A", "A"])
-    days = pd.Series([0, 10, 20])
+    labels = pl.Series([False, False, False])
+    subjects = pl.Series(["A", "A", "A"])
+    days = pl.Series([0, 10, 20])
     smoothed = smooth_temporal_labels(labels, subjects, days)
-    assert smoothed.tolist() == [False, False, False]
+    assert smoothed.to_list() == [False, False, False]
 
 
 def test_diagnosis_classification_uncertain_treated_as_demented() -> None:

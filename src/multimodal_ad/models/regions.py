@@ -66,7 +66,7 @@ from typing import cast
 
 import nibabel as nib
 import numpy as np
-import pandas as pd
+import polars as pl
 from nibabel.spatialimages import SpatialImage
 
 #: Retained from the legacy notebook's `fix_heat_dim`/`fix_atlas_dim`.
@@ -110,37 +110,35 @@ def load_atlas(path: str | Path = Path("atlas.nii.gz")) -> np.ndarray:
     return np.asarray(image.get_fdata())
 
 
-def load_region_labels(csv_path: str) -> pd.DataFrame:
+def load_region_labels(csv_path: str) -> pl.DataFrame:
     """Load `AAL2_Atlas_Labels.csv` (`id, name, intensity` columns, no header).
 
-    Indexed by region `name` (not the leading numeric `id` column), one
-    `intensity` column, matching `rank_regions`'s expected `region_labels` shape.
+    Two columns, `name` (region name) and `intensity`, matching
+    `rank_regions`'s expected `region_labels` shape (the leading numeric
+    `id` column is dropped; nothing downstream uses it).
     """
-    # `[[...]]` column selection returns `DataFrame | Series` per pandas'
-    # stubs; a single-element list always selects a DataFrame at runtime.
-    return cast(
-        pd.DataFrame,
-        pd.read_csv(csv_path, names=["id", "name", "intensity"], index_col="name")[["intensity"]],
+    return pl.read_csv(csv_path, new_columns=["id", "name", "intensity"], has_header=False).select(
+        "name", "intensity"
     )
 
-    # ponytail: no header-detection/validation beyond pandas defaults; the
-    # legacy CSV format is fixed and checked into the repo, add validation
-    # if a differently-shaped atlas label file needs supporting.
+    # ponytail: no header-detection/validation beyond polars' CSV defaults;
+    # the legacy CSV format is fixed and checked into the repo, add
+    # validation if a differently-shaped atlas label file needs supporting.
 
 
 def rank_regions(
     atlas: np.ndarray,
-    region_labels: pd.DataFrame,
+    region_labels: pl.DataFrame,
     heatmaps: dict[str, np.ndarray],
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     """Compute masked mean/region-mean/count/sum per atlas region, per heatmap.
 
     `atlas` and every array in `heatmaps` must already be padded to the same
     shape (e.g. via `pad_to_frame`). `region_labels` is `load_region_labels`'s
-    output (index: region name, column `intensity`). Returns one row per
-    region with, per heatmap key, mirroring the notebook's per-modality/
-    per-class column naming (`"Negative PET mean"`, etc.) without hardcoding
-    modality/class names:
+    output (columns `name`, `intensity`). Returns one row per region with,
+    per heatmap key, mirroring the notebook's per-modality/per-class column
+    naming (`"Negative PET mean"`, etc.) without hardcoding modality/class
+    names:
 
     - `f"{name} mean"`: the notebook's exact formula, region sum divided by
       the *full common-frame voxel count* (`atlas.size`), not the region's
@@ -154,7 +152,8 @@ def rank_regions(
     """
     frame_voxel_count = atlas.size
     rows: list[dict[str, object]] = []
-    for region_name, row in region_labels.iterrows():
+    for row in region_labels.iter_rows(named=True):
+        region_name = row["name"]
         intensity = row["intensity"]
         region_mask = atlas == intensity
         has_region = bool(region_mask.any())
@@ -169,4 +168,4 @@ def rank_regions(
             record[f"{heatmap_name} count"] = int(np.count_nonzero(masked))
             record[f"{heatmap_name} sum"] = region_sum
         rows.append(record)
-    return pd.DataFrame(rows)
+    return pl.DataFrame(rows)
