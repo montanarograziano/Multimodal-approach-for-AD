@@ -390,7 +390,7 @@ in this PR:
 | File | Referenced by | Notes |
 | --- | --- | --- |
 | `mri1.nii` | `images/3D Brain Plot.ipynb` | Loaded via `nib.load()` and used as the affine/spatial reference volume for rendering the 3D Grad-CAM figures. |
-| `resized_pos_mri.npy`, `resized_neg_mri.npy` | `images/3D Brain Plot.ipynb`, `exploration.ipynb` | Derived Grad-CAM artifacts: resized single-volume MRI heatmaps. Used in `images/3D Brain Plot.ipynb` for the positive-class preview slice (`plt.imshow(resized_pos_mri[:, :, 10])`) and in `exploration.ipynb` as the MRI heatmaps (`heat_mri_pos`/`heat_mri_neg`) driving AAL2 region ranking. |
+| `resized_pos_mri.npy`, `resized_neg_mri.npy` | `images/3D Brain Plot.ipynb`, `exploration.ipynb` | Derived Grad-CAM artifacts: resized positive-/negative-class MRI Grad-CAM heatmaps. Used in `images/3D Brain Plot.ipynb` for the positive-class preview slice (`plt.imshow(resized_pos_mri[:, :, 10])`) and in `exploration.ipynb` as the MRI heatmaps (`heat_mri_pos`/`heat_mri_neg`) driving AAL2 region ranking. |
 | `pos_mean_mri.npy`, `pos_mean_pet.npy` | `Heatmaps.ipynb`, `exploration.ipynb` | Precomputed mean Grad-CAM heatmaps. `neg_mean_pet.npy` and `pos_mri_heat.npy`/`neg_mri_heat.npy` are referenced by `exploration.ipynb`/`Heatmaps.ipynb` but **not present** in the repo — an existing gap, not introduced by this PR. |
 | `AAL2_Atlas_Labels.csv` | `exploration.ipynb` | Atlas region name → intensity mapping. |
 | `samples/mri-sample.png`, `samples/pet-sample.png` | README (implicitly, via `images/3D Brain Plot.ipynb`) | Figure assets for the paper. |

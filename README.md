@@ -142,7 +142,7 @@ Colab, no manual paths:
   chart (needs the `model` extra).
 - [`04-paper-figures.ipynb`](notebooks/04-paper-figures.ipynb): the legacy
   `3D Brain Plot.ipynb` glass-brain figures reproduced on the real,
-  committed root assets (`mri1.nii`, the derived cohort Grad-CAM `.npy`
+  committed root assets (`mri1.nii`, the derived Grad-CAM `.npy`
   files), with native/processed MRI reference slices, positive-vs-negative
   Grad-CAM comparison, cohort-mean overlays, Nilearn `plot_glass_brain`/
   `plot_stat_map` panels (needs the `science` extra or the `notebooks`
