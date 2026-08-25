@@ -18,5 +18,6 @@ and the CLI do not depend on it. Modules:
   notebook's `tf-keras-vis` dependency (see `gradcam` module docstring for
   why).
 - `regions`: AAL2 atlas region-importance ranking from Grad-CAM heatmaps,
-  ported from `exploration.ipynb`.
+  ported from `exploration.ipynb`; `load_atlas` loads the bundled root
+  `atlas.nii.gz`.
 """

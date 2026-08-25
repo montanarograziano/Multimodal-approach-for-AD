@@ -33,6 +33,7 @@ See [Installation](installation.md) for setup and the command table.
 ├── zensical.toml          # documentation site config
 ├── mri1.nii, *.npy        # historical data artifacts, see the legacy notebook inventory
 ├── samples/                # small figure PNGs
+├── atlas.nii.gz           # AAL2 atlas volume, bundled
 ├── AAL2_Atlas_Labels.csv  # AAL2 atlas region labels
 ├── pyproject.toml, uv.lock
 └── Justfile

@@ -50,7 +50,7 @@ unavailable until the `model` extra is installed.
 | [`training`](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/src/multimodal_ad/models/training.py) | `TrainingConfig`, `TrainingResult`, `train_model`, `seed_everything`, `save_model`, `load_model` | Compile/fit/evaluate with the notebook's retained optimizer/schedule/early-stopping constants; deterministic seeding; no MLflow. |
 | [`evaluation`](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/src/multimodal_ad/models/evaluation.py) | `EvaluationMetrics`, `evaluate_predictions`, `threshold_probabilities`, `sensitivity`, `specificity` | Accuracy/sensitivity/specificity/AUC from thresholded probabilities, with explicit `nan` handling for zero-class edge cases. |
 | [`gradcam`](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/src/multimodal_ad/models/gradcam.py) | `make_gradcam_heatmap`, `last_conv_layer_name`, `unwrap_output_activation` | Native `tf.GradientTape`-based 3D Grad-CAM (no `tf-keras-vis` dependency). |
-| [`regions`](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/src/multimodal_ad/models/regions.py) | `pad_to_frame`, `load_region_labels`, `rank_regions` | AAL2 atlas region-importance ranking from a Grad-CAM heatmap; requires a separately sourced `atlas.nii.gz`. |
+| [`regions`](https://github.com/montanarograziano/Multimodal-approach-for-AD/blob/main/src/multimodal_ad/models/regions.py) | `load_atlas`, `pad_to_frame`, `load_region_labels`, `rank_regions` | AAL2 atlas region-importance ranking from a Grad-CAM heatmap; the atlas (`atlas.nii.gz`) and its region labels are bundled at the repo root. |
 
 ```python
 from multimodal_ad.models.architecture import Cnn3DConfig, build_3d_cnn

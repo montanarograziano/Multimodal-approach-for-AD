@@ -1,10 +1,12 @@
 """AAL2 atlas region-importance ranking, ported from `exploration.ipynb`.
 
-**Requires the AAL2 atlas volume separately**: `atlas.nii.gz` is not checked
-into this repository (see inventory doc, open question 6); callers must
-source it (e.g. from NeuroVault, as referenced in the notebook's markdown)
-and load it with `nibabel` before calling this module. `AAL2_Atlas_Labels.csv`
-(region name -> intensity value, no header) *is* checked into the repo root.
+**The AAL2 atlas volume is bundled**: `atlas.nii.gz` is checked into the
+repository root ((91, 109, 91), 2mm voxels, 120 nonzero region intensities
+matching `AAL2_Atlas_Labels.csv`); load it with `load_atlas` below. This is
+a research/reference asset only, it is not included in the built sdist/
+wheel (see `pyproject.toml`'s sdist allowlist). `AAL2_Atlas_Labels.csv`
+(`id, name, intensity` columns, no header) is also checked into the repo
+root; load it with `load_region_labels`.
 
 **Retained, spatial padding**: the notebook pads both the `(128, 128, 50)`
 Grad-CAM heatmap and the atlas volume into a common `(128, 128, 128)` frame
@@ -59,6 +61,10 @@ exactly `sum / count` when `count > 0`.
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import cast
+
+import nibabel as nib
 import numpy as np
 import pandas as pd
 
@@ -90,9 +96,26 @@ def pad_to_frame(
     return frame
 
 
+def load_atlas(path: str | Path = Path("atlas.nii.gz")) -> np.ndarray:
+    """Load the bundled AAL2 atlas volume as a `(91, 109, 91)` intensity array.
+
+    Pass the result through `pad_to_frame(atlas, ATLAS_PLACEMENT)` before
+    calling `rank_regions` with a same-shaped heatmap.
+    """
+    # `nib.load` is typed as returning the generic `FileBasedImage` base
+    # class, but NIfTI always returns a `SpatialImage` subclass with
+    # `get_fdata` (see `data.volumes.load_volume` for the same cast).
+    image = cast(nib.spatialimages.SpatialImage, nib.load(path))
+    return np.asarray(image.get_fdata())
+
+
 def load_region_labels(csv_path: str) -> pd.DataFrame:
-    """Load `AAL2_Atlas_Labels.csv` (`name, intensity` columns, no header)."""
-    return pd.read_csv(csv_path, names=["name", "intensity"], index_col=0)
+    """Load `AAL2_Atlas_Labels.csv` (`id, name, intensity` columns, no header).
+
+    Indexed by region `name` (not the leading numeric `id` column), one
+    `intensity` column, matching `rank_regions`'s expected `region_labels` shape.
+    """
+    return pd.read_csv(csv_path, names=["id", "name", "intensity"], index_col="name")[["intensity"]]
 
     # ponytail: no header-detection/validation beyond pandas defaults; the
     # legacy CSV format is fixed and checked into the repo, add validation

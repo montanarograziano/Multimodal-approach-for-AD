@@ -340,9 +340,10 @@ model attention to known AD-affected regions.
 **Notebook behavior**:
 
 - Loads `atlas.nii.gz` (AAL2 atlas, referenced via a NeuroVault URL in the
-  markdown, **file not present in this repo** — must be sourced separately
-  when ported) and `AAL2_Atlas_Labels.csv` (checked into repo root, maps
-  region name → intensity value).
+  markdown; at the time of this audit the file was **not present in this
+  repo** and had to be sourced separately — since resolved, see the module
+  map above and `models.regions.load_atlas`) and `AAL2_Atlas_Labels.csv`
+  (checked into repo root, maps region name → intensity value).
 - `fix_heat_dim()` / `fix_atlas_dim()`: pad the (128,128,50) heatmap and the
   atlas volume into a common **(128, 128, 128)** frame, using **hardcoded
   offset slices**: heatmap placed at `[:, :, 39:89]` (50 slices centered in
@@ -433,8 +434,9 @@ them.
 5. **Confirm CV fold scheme** used for reported metrics: repeated 10×10
    subject-level `RepeatedStratifiedKFold` vs. single 10-fold frame-level
    `StratifiedKFold`.
-6. **Source the AAL2 atlas file** (`atlas.nii.gz`) separately; it is not
-   checked into the repo.
+6. **Source the AAL2 atlas file** (`atlas.nii.gz`) separately; it was not
+   checked into the repo at the time of this audit. **Resolved**: the file
+   is now bundled at the repo root, see `models.regions.load_atlas`.
 7. **Replace Colab/Drive/MLflow-via-DagsHub-with-`input()`** assumptions with
    a reproducible, non-interactive data/experiment-tracking story.
 

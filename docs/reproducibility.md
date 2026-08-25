@@ -67,8 +67,7 @@ These are tracked in detail in the
    wired into a CV driver here; `data.splits` provides subject-wise
    splitting/stratified folds as building blocks only.
 6. The AAL2 atlas file (`atlas.nii.gz`) referenced by `exploration.ipynb`
-   is not in this repository and must be sourced separately;
-   `models.regions` requires callers to load it themselves.
+   is bundled at the repository root; load it with `models.regions.load_atlas`.
 7. MLflow experiment tracking was wired to an interactive, `input()`
    -prompted DagsHub project; `models.training` drops it entirely rather
    than replacing it (see that module's docstring).

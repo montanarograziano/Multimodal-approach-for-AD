@@ -65,6 +65,7 @@ AD-affected brain regions.
 ├── zensical.toml          # documentation site config
 ├── mri1.nii, *.npy        # historical data artifacts, see the legacy notebook inventory
 ├── samples/               # small figure PNGs referenced by this README
+├── atlas.nii.gz           # AAL2 atlas volume, bundled (real OASIS-3 scans remain external)
 ├── AAL2_Atlas_Labels.csv  # AAL2 atlas region labels (region name -> intensity)
 ├── pyproject.toml, uv.lock
 └── Justfile               # `just <recipe>` command shortcuts
@@ -190,9 +191,10 @@ for full signatures):
   zero-class edge-case handling (`nan`, not a crash).
 - `models.gradcam.make_gradcam_heatmap`: a native `tf.GradientTape`-based
   3D Grad-CAM (no `tf-keras-vis` dependency).
-- `models.regions.rank_regions`: AAL2 atlas region-importance ranking from
-  a Grad-CAM heatmap (requires a separately sourced `atlas.nii.gz`, not
-  checked into this repo).
+- `models.regions.rank_regions` / `load_atlas`: AAL2 atlas region-importance
+  ranking from a Grad-CAM heatmap. The AAL2 atlas (`atlas.nii.gz`) is
+  bundled at the repo root; real OASIS-3 MRI/PET scans are still external
+  (see [OASIS-3](https://www.oasis-brains.org/)) and not redistributed here.
 
 ## Fast checks vs. model checks
 
