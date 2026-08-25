@@ -132,10 +132,13 @@ Colab, no manual paths:
   central slice.
 - [`02-tiny-model-workflow.ipynb`](notebooks/02-tiny-model-workflow.ipynb):
   build a reduced-filter 3D model, one bounded train/evaluate/save-reload
-  flow, correct metrics (needs the `model` extra).
+  flow, correct metrics, training-history and prediction-vs-label plots
+  (needs the `model` extra).
 - [`03-explainability.ipynb`](notebooks/03-explainability.ipynb): native
   Grad-CAM on a synthetic array plus AAL2 region ranking against the
-  bundled real AAL2 atlas (needs the `model` extra).
+  bundled real AAL2 atlas, with input/Grad-CAM/overlay slices, a real-atlas
+  slice, a synthetic-heatmap-over-atlas overlay, and a top-regions bar
+  chart (needs the `model` extra).
 
 ```bash
 just install
