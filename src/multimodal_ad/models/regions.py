@@ -67,6 +67,7 @@ from typing import cast
 import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel.spatialimages import SpatialImage
 
 #: Retained from the legacy notebook's `fix_heat_dim`/`fix_atlas_dim`.
 COMMON_FRAME_SHAPE = (128, 128, 128)
@@ -105,7 +106,7 @@ def load_atlas(path: str | Path = Path("atlas.nii.gz")) -> np.ndarray:
     # `nib.load` is typed as returning the generic `FileBasedImage` base
     # class, but NIfTI always returns a `SpatialImage` subclass with
     # `get_fdata` (see `data.volumes.load_volume` for the same cast).
-    image = cast(nib.spatialimages.SpatialImage, nib.load(path))
+    image = cast(SpatialImage, nib.load(path))
     return np.asarray(image.get_fdata())
 
 
@@ -115,7 +116,12 @@ def load_region_labels(csv_path: str) -> pd.DataFrame:
     Indexed by region `name` (not the leading numeric `id` column), one
     `intensity` column, matching `rank_regions`'s expected `region_labels` shape.
     """
-    return pd.read_csv(csv_path, names=["id", "name", "intensity"], index_col="name")[["intensity"]]
+    # `[[...]]` column selection returns `DataFrame | Series` per pandas'
+    # stubs; a single-element list always selects a DataFrame at runtime.
+    return cast(
+        pd.DataFrame,
+        pd.read_csv(csv_path, names=["id", "name", "intensity"], index_col="name")[["intensity"]],
+    )
 
     # ponytail: no header-detection/validation beyond pandas defaults; the
     # legacy CSV format is fixed and checked into the repo, add validation

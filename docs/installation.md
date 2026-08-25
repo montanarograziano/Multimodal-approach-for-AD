@@ -77,6 +77,20 @@ installs the hooks from `.pre-commit-config.yaml` (ruff, whitespace/EOF
 checks, TOML/YAML validation, large-file guard, pyrefly) to run on every
 commit.
 
+## VS Code / Pylance
+
+Open this repository's root as the VS Code workspace, then select
+`.venv/bin/python` as the interpreter (Command Palette → "Python: Select
+ Interpreter"). `.vscode/settings.json` points Pylance at that interpreter
+and at `src/` for module resolution. If Pylance reports false "missing
+import" errors for `keras`/`tensorflow`/`nibabel`/etc., it is almost always
+because `just install` has not been run yet (the `model`/`science` extras
+are optional and only present after a full install) or a different
+interpreter is still selected; re-run `just install` and re-select
+`.venv/bin/python`. The project's authoritative type-checker is Pyrefly
+(`just typecheck`/`just typecheck-model`); Pylance is IDE-only tooling, not
+a CI gate.
+
 ## Verifying your setup
 
 ```bash

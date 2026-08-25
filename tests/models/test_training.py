@@ -102,12 +102,14 @@ def test_save_and_load_keras_model_preserves_predictions(tmp_path: Path) -> None
     seed_everything(1234)
     model = build_3d_cnn(Cnn3DConfig(width=_TINY, height=_TINY, depth=_TINY, name="save"))
     x, _ = _tiny_data(2, seed=42)
-    predictions_before = model.predict(x, verbose=0)
+    # Keras 3's `predict` infers `verbose`'s type as `str` from its `"auto"`
+    # default; it accepts (and documents) an int verbosity level at runtime.
+    predictions_before = model.predict(x, verbose=0)  # pyright: ignore[reportArgumentType]
 
     path = tmp_path / "model.keras"
     save_model(model, path)
     reloaded = load_model(path)
-    predictions_after = reloaded.predict(x, verbose=0)
+    predictions_after = reloaded.predict(x, verbose=0)  # pyright: ignore[reportArgumentType]
 
     np.testing.assert_allclose(predictions_before, predictions_after)
 
@@ -116,11 +118,11 @@ def test_save_and_load_legacy_h5_preserves_predictions(tmp_path: Path) -> None:
     seed_everything(1234)
     model = build_3d_cnn(Cnn3DConfig(width=_TINY, height=_TINY, depth=_TINY, name="save-h5"))
     x, _ = _tiny_data(2, seed=42)
-    predictions_before = model.predict(x, verbose=0)
+    predictions_before = model.predict(x, verbose=0)  # pyright: ignore[reportArgumentType]
 
     path = tmp_path / "model.h5"
     save_model(model, path)
     reloaded = load_model(path)
-    predictions_after = reloaded.predict(x, verbose=0)
+    predictions_after = reloaded.predict(x, verbose=0)  # pyright: ignore[reportArgumentType]
 
     np.testing.assert_allclose(predictions_before, predictions_after)

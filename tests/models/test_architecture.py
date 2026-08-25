@@ -43,7 +43,9 @@ def test_build_3d_cnn_default_topology_matches_notebook_get_3d_model() -> None:
 def test_build_3d_cnn_forward_pass_shape_and_range() -> None:
     model = build_3d_cnn(_tiny_config(name="fwd"))
     x = np.random.default_rng(0).random((2, _TINY, _TINY, _TINY, 1)).astype("float32")
-    predictions = model.predict(x, verbose=0)
+    # Keras 3's `predict` infers `verbose`'s type as `str` from its `"auto"`
+    # default; it accepts (and documents) an int verbosity level at runtime.
+    predictions = model.predict(x, verbose=0)  # pyright: ignore[reportArgumentType]
     assert predictions.shape == (2, 1)
     assert np.all(np.isfinite(predictions))
     assert np.all((predictions >= 0.0) & (predictions <= 1.0))
@@ -89,7 +91,7 @@ def test_build_fusion_model_accepts_two_inputs_and_shape() -> None:
     assert len(fusion.inputs) == 2
     x_mri = np.random.default_rng(1).random((2, _TINY, _TINY, _TINY, 1)).astype("float32")
     x_pet = np.random.default_rng(2).random((2, _TINY, _TINY, _TINY, 1)).astype("float32")
-    predictions = fusion.predict([x_mri, x_pet], verbose=0)
+    predictions = fusion.predict([x_mri, x_pet], verbose=0)  # pyright: ignore[reportArgumentType]
     assert predictions.shape == (2, 1)
     assert np.all(np.isfinite(predictions))
 

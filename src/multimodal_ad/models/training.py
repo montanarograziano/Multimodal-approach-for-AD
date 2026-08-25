@@ -99,7 +99,10 @@ def build_optimizer(config: TrainingConfig) -> keras.optimizers.Optimizer:
         decay_rate=config.lr_decay_rate,
         staircase=config.lr_staircase,
     )
-    return keras.optimizers.Adam(learning_rate=lr_schedule)
+    # Keras 3's `Adam.__init__` has no type annotation on `learning_rate`;
+    # pyright infers `float` from its `0.001` default, but Keras accepts (and
+    # documents) a `LearningRateSchedule` at runtime, as used here.
+    return keras.optimizers.Adam(learning_rate=lr_schedule)  # pyright: ignore[reportArgumentType]
 
 
 def make_dataset(
@@ -176,7 +179,10 @@ def train_model(
     early_stopping_cb = keras.callbacks.EarlyStopping(
         monitor=config.monitor,
         patience=config.early_stopping_patience,
-        min_delta=config.early_stopping_min_delta,
+        # Keras 3's `EarlyStopping.__init__` has no annotation on `min_delta`;
+        # pyright infers `int` from its `0` default, but Keras accepts (and
+        # documents) a float threshold at runtime, as used here.
+        min_delta=config.early_stopping_min_delta,  # pyright: ignore[reportArgumentType]
         baseline=config.early_stopping_baseline,
     )
 
@@ -185,12 +191,18 @@ def train_model(
         validation_data=val_dataset,
         epochs=config.epochs,
         shuffle=True,
-        verbose=cast(Literal[0, 1, 2], config.verbose),
+        # Keras 3's `fit`/`evaluate`/`predict` have no annotation on `verbose`;
+        # pyright infers `str` from its `"auto"` default, but Keras accepts
+        # (and documents) an int verbosity level at runtime, as used here.
+        verbose=cast(Literal[0, 1, 2], config.verbose),  # pyright: ignore[reportArgumentType]
         callbacks=[checkpoint_cb, early_stopping_cb],
     )
 
     model.load_weights(str(config.checkpoint_path))
-    eval_metrics = cast(dict[str, float], model.evaluate(val_dataset, verbose=0, return_dict=True))
+    eval_metrics = cast(
+        dict[str, float],
+        model.evaluate(val_dataset, verbose=0, return_dict=True),  # pyright: ignore[reportArgumentType]
+    )
     val_loss, val_accuracy = eval_metrics["loss"], eval_metrics["accuracy"]
 
     return TrainingResult(
@@ -210,4 +222,7 @@ def save_model(model: keras.Model, path: str | Path) -> None:
 
 def load_model(path: str | Path) -> keras.Model:
     """Load a `.keras` or legacy `.h5` model file (format inferred from extension)."""
-    return keras.models.load_model(str(path))
+    # `keras.models.load_model` is typed to return a broad, mostly-`Unknown`
+    # union; every format this pipeline saves (`.keras`/`.h5`) loads back a
+    # `keras.Model`.
+    return cast(keras.Model, keras.models.load_model(str(path)))

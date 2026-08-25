@@ -15,6 +15,7 @@ from typing import cast
 import nibabel as nib
 import numpy as np
 import pytest
+from nibabel.spatialimages import SpatialImage
 
 from multimodal_ad.models.regions import load_atlas, load_region_labels
 
@@ -28,7 +29,7 @@ def test_atlas_file_exists() -> None:
 
 
 def test_atlas_shape_and_voxel_size() -> None:
-    image = cast(nib.spatialimages.SpatialImage, nib.load(ATLAS_PATH))
+    image = cast(SpatialImage, nib.load(ATLAS_PATH))
     assert image.shape == (91, 109, 91)
     assert tuple(image.header.get_zooms()) == pytest.approx((2.0, 2.0, 2.0))
 

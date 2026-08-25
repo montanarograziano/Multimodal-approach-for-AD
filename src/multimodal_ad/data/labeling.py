@@ -32,6 +32,7 @@ if the OASIS-3 codebook clarifies its intent, this regex should be updated.
 from __future__ import annotations
 
 import re
+from typing import cast
 
 import pandas as pd
 
@@ -108,7 +109,9 @@ def smooth_temporal_labels(
                 corrected[i] = True
         smoothed.loc[ordered.index] = corrected
 
-    return smoothed.reindex(labels.index)
+    # `.reindex` is typed as returning `Series | DataFrame` (pandas' generic
+    # overloads); called on a `Series` it always returns a `Series`.
+    return cast(pd.Series, smoothed.reindex(labels.index))
 
 
 def label_nearest_visit(

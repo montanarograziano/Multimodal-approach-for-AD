@@ -45,6 +45,7 @@ from typing import NamedTuple, cast
 import cv2
 import nibabel as nib
 import numpy as np
+from nibabel.spatialimages import SpatialImage
 
 from multimodal_ad.data.manifest import Modality
 
@@ -94,7 +95,7 @@ def load_volume(path: Path) -> np.ndarray:
     # `nib.load` is typed as returning the generic `FileBasedImage` base class,
     # but every format this pipeline supports (NIfTI, Analyze) returns a
     # `SpatialImage` subclass with `get_fdata`.
-    image = cast(nib.spatialimages.SpatialImage, nib.load(path))
+    image = cast(SpatialImage, nib.load(path))
     return np.asarray(image.get_fdata())
 
 
