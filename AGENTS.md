@@ -81,11 +81,15 @@ subtree; CI's `model-smoke` job does this automatically after installing the
 - `[project.dependencies]` holds packages `multimodal_ad` unconditionally
   imports at runtime (currently: nibabel, numpy, opencv-python, polars,
   scikit-learn, scipy, all used by `multimodal_ad.data`). Tabular data
-  (manifests, clinical tables, splits, region-ranking results) uses Polars,
-  not pandas; pandas is not a dependency of this project.
+  (manifests, clinical tables, splits, region-ranking results) is Polars,
+  not pandas, directly: no `multimodal_ad` module or non-legacy notebook
+  imports pandas. Pandas can still show up transitively (`nilearn`, used
+  only by `04-paper-figures.ipynb`'s Nilearn glass-brain/stat-map panels,
+  depends on it); that's fine, it's a visualization dependency's
+  dependency, not a change to this project's own tabular stack.
   `[project.optional-dependencies].science` holds packages only needed by
   code not yet ported or only used for specific features (TensorFlow/Keras,
-  tf-keras-vis, matplotlib, pillow). When a module starts unconditionally
+  tf-keras-vis, matplotlib, nilearn, pillow). When a module starts unconditionally
   importing a `science` package, move it to `[project.dependencies]`. Add
   dev tooling to `[dependency-groups].dev`. Notebook-only tooling
   (ipykernel, notebook, matplotlib for display) goes in

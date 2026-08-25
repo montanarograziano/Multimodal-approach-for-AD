@@ -29,9 +29,12 @@ model = [
     "tensorflow>=2.20.0",
 ]
 # Plotting-only dependencies for notebook-adjacent visualization, not
-# imported by any `multimodal_ad` runtime code.
+# imported by any `multimodal_ad` runtime code. `nilearn` pulls in pandas
+# transitively; that's fine here, it just must not become a project.py
+# runtime import (see AGENTS.md).
 science = [
     "matplotlib>=3.10.0",
+    "nilearn>=0.11.1",
     "pillow>=11.1.0",
 ]
 
@@ -49,7 +52,10 @@ notebooks = [
     # Only used by the notebooks under `notebooks/` to display slices/plots;
     # not a `multimodal_ad` runtime dependency (see `science` extra above,
     # which is a separate installable-extra path for the same packages).
+    # `nilearn` pulls in pandas transitively, used only by
+    # `04-paper-figures.ipynb`.
     "matplotlib>=3.10.0",
+    "nilearn>=0.11.1",
 ]
 docs = [
     "zensical>=0.0.57",

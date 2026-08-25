@@ -144,11 +144,13 @@ Colab, no manual paths:
   `3D Brain Plot.ipynb` glass-brain figures reproduced on the real,
   committed root assets (`mri1.nii`, the derived cohort Grad-CAM `.npy`
   files), with native/processed MRI reference slices, positive-vs-negative
-  Grad-CAM comparison, cohort-mean overlays, NumPy/Matplotlib
-  glass-brain-style MIP panels (no Nilearn), and the static sample PNGs;
-  every figure caption distinguishes real reference, derived heatmap, and
-  static-sample imagery, and the overlays are explicitly illustrative, not
-  a validated registration.
+  Grad-CAM comparison, cohort-mean overlays, Nilearn `plot_glass_brain`/
+  `plot_stat_map` panels (needs the `science` extra or the `notebooks`
+  group), and the static sample PNGs; every figure caption distinguishes
+  real reference, derived heatmap, and static-sample imagery, and the
+  overlays are explicitly illustrative, not a validated registration (the
+  legacy affine reused for the Nilearn panels is ad hoc and unvalidated,
+  even though the plotting parameters exactly match the legacy notebook).
 
 ```bash
 just install

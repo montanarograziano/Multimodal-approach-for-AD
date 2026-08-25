@@ -22,8 +22,10 @@ every dependency group and optional extra against the locked versions in
 scikit-learn, scipy — everything `multimodal_ad.data` and the CLI import
 unconditionally), the `dev` group (ruff, pyrefly, pytest, prek), the
 `model` extra (TensorFlow, for `multimodal_ad.models`), the `science`
-extra (`matplotlib`, `pillow`, for notebook-adjacent plotting), and the
-`notebooks`/`docs` groups. This is the normal full local setup command; CI
+extra (`matplotlib`, `nilearn`, `pillow`, for notebook-adjacent plotting;
+`nilearn` pulls in pandas transitively, `multimodal_ad` itself stays
+Polars-only), and the `notebooks`/`docs` groups. This is the normal full
+local setup command; CI
 uses narrower, targeted `uv sync`/`uv run` invocations per job to keep the
 fast/model/notebook/docs jobs isolated (see `.github/workflows/`).
 
@@ -54,9 +56,10 @@ notebooks that call into the `multimodal_ad` API on deterministic synthetic
 data (plus real, committed root assets for `04-paper-figures.ipynb`): no
 OASIS-3 access, no manual paths, no Colab. `01-data-quickstart.ipynb` needs
 only the base install; `02-tiny-model-workflow.ipynb` and
-`03-explainability.ipynb` need the `model` extra too;
-`04-paper-figures.ipynb` needs only the base install. All four need the
-`notebooks` group, installed by `just install`:
+`03-explainability.ipynb` need the `model` extra too; `04-paper-figures.ipynb`
+needs only the base install (its Nilearn glass-brain/stat-map panels come
+from the `notebooks` group, see below). All four need the `notebooks`
+group, installed by `just install`:
 
 ```bash
 just install
