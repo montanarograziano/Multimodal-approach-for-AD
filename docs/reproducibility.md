@@ -2,12 +2,12 @@
 
 ## What runs today
 
-- `uv sync --locked` and `just check` (lint, format check, `pyrefly
+- `just install` and `just check` (lint, format check, `pyrefly
   check`, `pytest`) run cleanly on a clean clone, CPU-only, no data
   required. This exercises `multimodal_ad.data` and the CLI; it does not
   need TensorFlow.
-- `uv sync --locked --extra model`, `just typecheck-model`, and `uv run
-  pytest` (now including `tests/models/`) also run cleanly, CPU-only.
+- With the `model` extra installed (`just install`), `just typecheck-model`
+  and `uv run pytest` (now including `tests/models/`) also run cleanly, CPU-only.
   This exercises `multimodal_ad.models` (3D CNN, training loop,
   evaluation, Grad-CAM, region ranking) against tiny synthetic data and
   a handful of training steps, not full training runs.

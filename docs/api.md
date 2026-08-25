@@ -38,7 +38,7 @@ manifest = generate_synthetic_dataset(Path("/tmp/synthetic-data"))
 train_df, test_df = subject_train_test_split(manifest.to_dataframe(), seed=1234)
 ```
 
-## `multimodal_ad.models` (requires `uv sync --extra model`)
+## `multimodal_ad.models` (requires the `model` extra, e.g. `just install`)
 
 [`src/multimodal_ad/models/`](https://github.com/montanarograziano/Multimodal-approach-for-AD/tree/main/src/multimodal_ad/models)
 imports TensorFlow/Keras unconditionally; every symbol below is

@@ -76,13 +76,15 @@ Requires Python 3.13 and [`uv`](https://docs.astral.sh/uv/) (do not use
 `pip`/`poetry`/`pipenv`/`conda` for this project):
 
 ```bash
-uv sync --locked                 # dev tooling + multimodal_ad.data's runtime deps
-uv sync --locked --extra model   # + TensorFlow, for multimodal_ad.models
+just install   # uv sync --locked --all-groups --all-extras
 ```
 
-`multimodal_ad.data` and the CLI run without TensorFlow. `multimodal_ad.models`
-imports TensorFlow unconditionally, so it's an opt-in extra (`model`), not a
-default dependency; see [Model pipeline](#model-pipeline) below.
+`just install` installs runtime, dev, model, science, notebook, and docs
+dependencies in one shot (every dependency group and optional extra), from
+the locked versions in `uv.lock`. `multimodal_ad.data` and the CLI run
+without TensorFlow; `multimodal_ad.models` imports TensorFlow
+unconditionally, via the `model` extra installed above; see
+[Model pipeline](#model-pipeline) below.
 
 Common commands (see the [`Justfile`](Justfile)):
 
@@ -135,7 +137,7 @@ Colab, no manual paths:
   `model` extra).
 
 ```bash
-uv sync --locked --extra model --group notebooks
+just install
 just notebooks-launch
 ```
 
@@ -167,7 +169,7 @@ evaluation metrics, Grad-CAM, and AAL2 region ranking from `Training.ipynb`
 and `Heatmaps.ipynb`/`exploration.ipynb`. It requires the `model` extra:
 
 ```bash
-uv sync --locked --extra model
+just install
 just typecheck-model
 uv run pytest tests/models
 ```
@@ -197,9 +199,9 @@ for full signatures):
 - `just check` (lint, format check, `pyrefly check`, `pytest`) runs
   against `multimodal_ad.data` and the CLI only, with no TensorFlow
   needed; this is the default/fast CI job.
-- `just typecheck-model` and the `tests/models/` suite need
-  `uv sync --extra model` (TensorFlow) first; CI runs these in a separate
-  `model-smoke` job.
+- `just typecheck-model` and the `tests/models/` suite need the `model`
+  extra (`just install`, or `uv sync --extra model` for a lighter install)
+  first; CI runs these in a separate `model-smoke` job.
 - `pyrefly`'s default scope (`pyproject.toml`, `[tool.pyrefly]`)
   explicitly excludes `src/multimodal_ad/models` and `tests/models` so the
   fast job doesn't require TensorFlow to type-check.

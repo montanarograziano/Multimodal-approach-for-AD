@@ -13,28 +13,19 @@
 ```bash
 git clone https://github.com/montanarograziano/Multimodal-approach-for-AD.git
 cd Multimodal-approach-for-AD
-uv sync --locked
+just install
 ```
 
-`uv sync --locked` installs the `dev` dependency group (ruff, pyrefly,
-pytest, prek) plus `multimodal_ad`'s always-on runtime dependencies
-(nibabel, numpy, opencv-python, pandas, scikit-learn, scipy — everything
-`multimodal_ad.data` and the CLI import unconditionally), against the
-locked versions in `uv.lock`. It does **not** install TensorFlow by
-default, because only `multimodal_ad.models` imports it:
-
-```bash
-uv sync --locked --extra model     # + TensorFlow, for multimodal_ad.models
-```
-
-There's also a `science` extra (`matplotlib`, `pillow`) for
-notebook-adjacent plotting; no `multimodal_ad` runtime code imports it. To
-run the notebooks under `notebooks/` (see [Notebooks](#notebooks) below),
-install the `notebooks` dependency group too:
-
-```bash
-uv sync --locked --extra model --group notebooks   # notebooks + model pipeline
-```
+`just install` (`uv sync --locked --all-groups --all-extras`) installs
+every dependency group and optional extra against the locked versions in
+`uv.lock`: runtime deps (nibabel, numpy, opencv-python, pandas,
+scikit-learn, scipy — everything `multimodal_ad.data` and the CLI import
+unconditionally), the `dev` group (ruff, pyrefly, pytest, prek), the
+`model` extra (TensorFlow, for `multimodal_ad.models`), the `science`
+extra (`matplotlib`, `pillow`, for notebook-adjacent plotting), and the
+`notebooks`/`docs` groups. This is the normal full local setup command; CI
+uses narrower, targeted `uv sync`/`uv run` invocations per job to keep the
+fast/model/notebook/docs jobs isolated (see `.github/workflows/`).
 
 ## Common commands
 
@@ -42,7 +33,7 @@ All commands are defined in the [`Justfile`](https://github.com/montanarograzian
 
 | Command | Equivalent | Purpose |
 | --- | --- | --- |
-| `just sync` | `uv sync --locked` | Install dependencies from the lockfile |
+| `just install` | `uv sync --locked --all-groups --all-extras` | Install every dependency group and extra from the lockfile |
 | `just fmt` | `uv run ruff format .` | Format code |
 | `just lint` | `uv run ruff check .` | Lint code |
 | `just typecheck` | `uv run pyrefly check` | Type-check `src/`/`tests/`, excluding `multimodal_ad.models`/`tests/models` |
@@ -63,10 +54,10 @@ notebooks that call into the `multimodal_ad` API on deterministic synthetic
 data: no OASIS-3 access, no manual paths, no Colab. `01-data-quickstart.ipynb`
 needs only the base install; `02-tiny-model-workflow.ipynb` and
 `03-explainability.ipynb` need the `model` extra too. All three need the
-`notebooks` group:
+`notebooks` group, installed by `just install`:
 
 ```bash
-uv sync --locked --extra model --group notebooks
+just install
 just notebooks-launch
 ```
 

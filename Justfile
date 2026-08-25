@@ -4,9 +4,9 @@ set shell := ["bash", "-cu"]
 default:
     @just --list
 
-# Install project dependencies (dev group) from the lock file
-sync:
-    uv sync --locked
+# Install every dependency group and extra (dev, model, science, notebooks, docs) from the lock file
+install:
+    uv sync --locked --all-groups --all-extras
 
 # Format code with Ruff
 fmt:

@@ -9,7 +9,7 @@
 - Type checker: `pyrefly`, scoped to `src/`/`tests/` by default,
   excluding `multimodal_ad.models`/`tests/models` (those import
   TensorFlow unconditionally); `just typecheck-model` checks that subtree
-  separately after `uv sync --extra model`.
+  separately once the `model` extra is installed (`just install`).
 - Test runner: `pytest`, with coverage (`--cov=multimodal_ad`). Tests
   under `tests/models/` use `pytest.importorskip("tensorflow")` and
   auto-skip if the `model` extra isn't installed.
@@ -93,7 +93,7 @@ the [legacy notebook inventory](legacy-notebooks-inventory.md)) and not
 executable outside their original Colab/Drive environment.
 
 ```bash
-uv sync --locked --extra model --group notebooks
+just install
 just notebooks-launch    # launch Jupyter against notebooks/
 just notebooks-execute   # execute every thin notebook from a clean kernel
 just notebooks-clear     # clear outputs before committing

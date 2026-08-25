@@ -49,7 +49,7 @@ behavior audit each module's docstring cites.
 Run via `just` (see `Justfile` for the full list):
 
 ```sh
-just sync        # uv sync --locked
+just install     # uv sync --locked --all-groups --all-extras
 just fmt         # ruff format .
 just lint        # ruff check .
 just typecheck   # pyrefly check (src/tests, excludes multimodal_ad.models)
@@ -59,9 +59,14 @@ just check       # lint + format check + typecheck + test (CI-equivalent)
 just hooks       # uv run prek run --all-files
 ```
 
-Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
-`uv run ruff format --check .`, `uv run pyrefly check`, `uv run pytest`,
-`uv run prek run --all-files`.
+`just install` installs runtime, dev, model, science, notebook, and docs
+dependencies in one shot (every dependency group and optional extra), for a
+full local setup. CI jobs use narrower, targeted `uv sync`/`uv run` calls to
+keep the fast/model/notebook/docs jobs isolated; see `.github/workflows/`.
+
+Equivalent raw commands: `uv sync --locked --all-groups --all-extras`,
+`uv run ruff check .`, `uv run ruff format --check .`, `uv run pyrefly check`,
+`uv run pytest`, `uv run prek run --all-files`.
 
 `multimodal_ad.models` (and `tests/models`) import TensorFlow/Keras
 unconditionally, so they are excluded from `just typecheck`'s default scope
