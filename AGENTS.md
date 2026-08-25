@@ -8,23 +8,33 @@ Instructions for coding agents (and humans) working in this repository.
 Multi-modal Approach With 3D MRI and Amyloid PET"
 ([Scientific Reports, 2024](https://doi.org/10.1038/s41598-024-56001-9)).
 
-The repository is mid-migration from a collection of exploratory Google
-Colab notebooks (`Dataset_MRI.ipynb`, `Dataset_PET.ipynb`, `Training.ipynb`,
-`Heatmaps.ipynb`, `exploration.ipynb`) to a proper `src/` layout Python
-package (`multimodal_ad`). See `docs/legacy-notebooks-inventory.md` for a
-full behavior audit of the legacy notebooks before touching any scientific
-logic.
+The repository was migrated from a collection of exploratory Google Colab
+notebooks (`Dataset_MRI.ipynb`, `Dataset_PET.ipynb`, `Training.ipynb`,
+`Heatmaps.ipynb`, `exploration.ipynb`, plus `images/3D Brain Plot.ipynb`) to
+a proper `src/` layout Python package (`multimodal_ad`). Those five
+notebooks are preserved byte-for-byte under `notebooks/legacy/`; see
+`docs/legacy-notebooks-inventory.md` for a full behavior audit before
+touching any scientific logic. Small, newcomer-oriented thin notebooks
+under `notebooks/` (not `notebooks/legacy/`) now call into the ported
+`multimodal_ad` API on synthetic data; see "Notebooks" below.
 
-**As of this PR, the typed data pipeline (`multimodal_ad.data`) has been
-ported**: diagnosis normalization/labeling, a typed scan manifest, a local
-OASIS-3 layout adapter (no download/redistribution), volume
-loading/cropping/resizing, deterministic augmentation, and subject-wise
-splitting. Model training/inference (`Training.ipynb`, `Heatmaps.ipynb`,
-`exploration.ipynb`) has **not** been ported yet; do not assume
-`multimodal_ad` implements those until a later phase ports them. See
-`src/multimodal_ad/data/__init__.py` for the module map and
-`docs/legacy-notebooks-inventory.md` for the behavior audit each module's
-docstring cites.
+**The typed data pipeline (`multimodal_ad.data`) has been ported**:
+diagnosis normalization/labeling, a typed scan manifest, a local OASIS-3
+layout adapter (no download/redistribution), volume loading/cropping/
+resizing, deterministic augmentation, and subject-wise splitting.
+
+**As of this PR, the model/training/evaluation/explainability pipeline
+(`multimodal_ad.models`) has also been ported** from `Training.ipynb` and
+`Heatmaps.ipynb`: the 3D CNN architecture and its frozen/named/fusion
+variants, a training config/loop with deterministic seeding and `.keras`/
+legacy `.h5` save-load, accuracy/sensitivity/specificity/AUC evaluation,
+a native Grad-CAM, and AAL2 region-ranking utilities (`exploration.ipynb`).
+`multimodal_ad.models` imports TensorFlow unconditionally; install the
+`model` extra (`uv sync --extra model`) to use it. `multimodal_ad.data` and
+the CLI do not depend on TensorFlow. See
+`src/multimodal_ad/data/__init__.py` and `src/multimodal_ad/models/__init__.py`
+for the module maps, and `docs/legacy-notebooks-inventory.md` for the
+behavior audit each module's docstring cites.
 
 ## Environment
 
@@ -42,7 +52,8 @@ Run via `just` (see `Justfile` for the full list):
 just sync        # uv sync --locked
 just fmt         # ruff format .
 just lint        # ruff check .
-just typecheck   # pyrefly check
+just typecheck   # pyrefly check (src/tests, excludes multimodal_ad.models)
+just typecheck-model  # pyrefly check src/multimodal_ad/models tests/models
 just test        # pytest
 just check       # lint + format check + typecheck + test (CI-equivalent)
 just hooks       # uv run prek run --all-files
@@ -51,6 +62,14 @@ just hooks       # uv run prek run --all-files
 Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
 `uv run ruff format --check .`, `uv run pyrefly check`, `uv run pytest`,
 `uv run prek run --all-files`.
+
+`multimodal_ad.models` (and `tests/models`) import TensorFlow/Keras
+unconditionally, so they are excluded from `just typecheck`'s default scope
+(`project-excludes` in `pyproject.toml`'s `[tool.pyrefly]`) to keep the fast
+`check` CI job/`just check` runnable without the `model` extra installed.
+Run `just typecheck-model` after `uv sync --extra model` to type-check that
+subtree; CI's `model-smoke` job does this automatically after installing the
+`model` extra.
 
 ## Conventions
 
@@ -62,11 +81,17 @@ Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
   tf-keras-vis, matplotlib, pillow). When a module starts unconditionally
   importing a `science` package, move it to `[project.dependencies]`. Add
   dev tooling to `[dependency-groups].dev`. Notebook-only tooling
-  (ipykernel, notebook) goes in `[dependency-groups].notebooks`.
-- Legacy `.ipynb` files are **excluded from Ruff lint/format** (see
-  `extend-exclude` in `pyproject.toml`) and are preserved as historical
-  artifacts. Do not edit notebook cells without an explicit task to do so;
-  when you do, keep the diff minimal and note the change in the PR/commit.
+  (ipykernel, notebook, matplotlib for display) goes in
+  `[dependency-groups].notebooks`.
+- All `.ipynb` files are **excluded from Ruff lint/format** (see
+  `extend-exclude` in `pyproject.toml`). `notebooks/legacy/*.ipynb` are
+  preserved as historical artifacts, byte-for-byte; do not edit their cells
+  without an explicit task to do so. `notebooks/*.ipynb` (the thin,
+  ported-API notebooks) must stay orchestration-only: no function/class
+  definitions, no Colab mounts/shell installs/absolute paths/credentials,
+  committed with cleared outputs (`just notebooks-clear`); enforced by
+  `tests/notebooks/` and the `notebook-smoke` CI job (`just
+  notebooks-execute`).
 - Type hints are required on new code in `src/`; `pyrefly check` runs in CI
   and via `prek`.
 - Every non-trivial change needs a test in `tests/` (pytest). Prefer plain
@@ -76,14 +101,18 @@ Equivalent raw commands: `uv sync --locked`, `uv run ruff check .`,
 
 ## Migration plan pointer
 
-Phase 0/1: notebook inventory + project foundation (`pyproject.toml`,
-`Justfile`, CI, lint/type/test scaffolding). Phase 2a (this PR): typed data
+Phase 0/1 (done): notebook inventory + project foundation (`pyproject.toml`,
+`Justfile`, CI, lint/type/test scaffolding). Phase 2a (done): typed data
 pipeline (`multimodal_ad.data`) ported from `Dataset_MRI.ipynb` /
 `Dataset_PET.ipynb`, with a synthetic NIfTI/manifest generator so the full
-data path is testable without OASIS-3. Phase 2b (future, stacked): model
-training/inference ported from `Training.ipynb` / `Heatmaps.ipynb` /
-`exploration.ipynb`. See `docs/legacy-notebooks-inventory.md` for the open
-questions (frame depth, fusion head, CV fold scheme, etc.) that must be
-resolved with the paper authors before Phase 2b starts; several data-path
-ambiguities are also documented inline in `multimodal_ad.data` module
-docstrings where this PR had to make an explicit, documented choice.
+data path is testable without OASIS-3. Phase 2b (done): model
+training/evaluation/Grad-CAM/region-ranking (`multimodal_ad.models`) ported
+from `Training.ipynb` / `Heatmaps.ipynb` / `exploration.ipynb`. Phase 3
+(this PR, done): thin notebooks under `notebooks/` calling into the ported
+API on synthetic data; the five original notebooks (plus `images/3D Brain
+Plot.ipynb`) moved byte-for-byte to `notebooks/legacy/`. See
+`docs/legacy-notebooks-inventory.md` for the open scientific questions
+(frame depth, fusion head, CV fold scheme, etc.) that remain unresolved and
+block real-OASIS-3 validation, not this port; several data-path ambiguities
+are also documented inline in `multimodal_ad.data`/`multimodal_ad.models`
+module docstrings where an explicit, documented choice had to be made.

@@ -10,10 +10,12 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        # README/legacy images sub-project are left untouched per migration scope.
-        exclude: '\.ipynb$|^README\.md$|^images/'
+        # README/notebooks are left untouched per migration scope (legacy
+        # notebooks preserved byte-for-byte; new notebooks' outputs are
+        # managed by `just notebooks-clear`, not this hook).
+        exclude: '\.ipynb$|^README\.md$'
       - id: end-of-file-fixer
-        exclude: '\.ipynb$|^README\.md$|^images/'
+        exclude: '\.ipynb$|^README\.md$'
       - id: check-toml
       - id: check-yaml
       - id: check-added-large-files
